@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 
@@ -15,17 +16,34 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function LoginPage() {
+export default function RegisterPage() {
+  const router = useRouter();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function handleCredentialsLogin(e: React.FormEvent) {
+  async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
 
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError(data.error ?? "Something went wrong.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Auto sign-in after successful registration
     const result = await signIn("credentials", {
       email,
       password,
@@ -35,20 +53,20 @@ export default function LoginPage() {
     setIsSubmitting(false);
 
     if (result?.error) {
-      setError("Invalid email or password.");
+      setError("Registered but could not sign in. Please go to login.");
       return;
     }
 
-    window.location.href = "/dashboard";
+    router.push("/dashboard");
   }
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center bg-background p-6">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Sign in to UPT Portal</CardTitle>
+          <CardTitle className="text-2xl">Create your account</CardTitle>
           <CardDescription>
-            Use your Google account or your email and password.
+            Join UPT Portal. You can also sign up with Google.
           </CardDescription>
         </CardHeader>
 
@@ -68,7 +86,19 @@ export default function LoginPage() {
             <div className="h-px flex-1 bg-border" />
           </div>
 
-          <form onSubmit={handleCredentialsLogin} className="flex flex-col gap-4">
+          <form onSubmit={handleRegister} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name"
+                required
+              />
+            </div>
+
             <div className="flex flex-col gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -88,21 +118,25 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                minLength={8}
                 required
               />
+              <p className="text-xs text-muted-foreground">
+                Minimum 8 characters
+              </p>
             </div>
 
             {error && <p className="text-sm text-destructive">{error}</p>}
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Signing in…" : "Sign in"}
+              {isSubmitting ? "Creating account…" : "Create account"}
             </Button>
           </form>
 
           <p className="text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
-            <Link href="/register" className="underline">
-              Create one
+            Already have an account?{" "}
+            <Link href="/login" className="underline">
+              Sign in
             </Link>
           </p>
         </CardContent>

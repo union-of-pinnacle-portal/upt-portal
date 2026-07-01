@@ -1,20 +1,22 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+
+import { findUserByEmail, createUser } from "@/lib/user-store";
 
 /**
- * Central auth config for the UPT portal.
+ * Auth config for the UPT portal.
  *
- * Two sign-in methods are supported:
- *  - Google OAuth (handled entirely by NextAuth + Google provider)
- *  - Email/password (handled by the Credentials provider below)
+ * Supports:
+ *  - Google OAuth — auto-creates a "general" account on first sign-in
+ *  - Email/password — user registers via /register, logs in via /login
  *
- * NOTE: The Credentials `authorize` function currently checks against a
- * single hardcoded test account. This is intentional for now — it lets us
- * build and test the full login flow before the real user store
- * (DynamoDB, via infra/) exists. Once that table is ready, replace the
- * body of `authorize` with a real lookup + password check and nothing
- * else in this file (or in the UI) needs to change.
+ * Role is stored in the JWT so it's available everywhere without a
+ * DB lookup on every request.
+ *
+ * NOTE: user-store.ts is currently in-memory.
+ * When DynamoDB is ready, only that file needs to change.
  */
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -31,17 +33,52 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if (!email || !password) return null;
 
-        // TODO: replace with a real DynamoDB user lookup + password hash check
-        const isValidTestUser =
-          email === "test@upt.org" && password === "test123";
+        const user = findUserByEmail(email);
+        if (!user || !user.passwordHash) return null;
 
-        if (!isValidTestUser) return null;
+        const passwordMatch = await bcrypt.compare(password, user.passwordHash);
+        if (!passwordMatch) return null;
 
-        return { id: "1", email, name: "Test User" };
+        return { id: user.id, email: user.email, name: user.name };
       },
     }),
   ],
+
   pages: {
     signIn: "/login",
+  },
+
+  callbacks: {
+    // Auto-create account for first-time Google sign-ins
+    async signIn({ user, account }) {
+      if (account?.provider === "google" && user.email) {
+        const existing = findUserByEmail(user.email);
+        if (!existing) {
+          createUser({
+            name: user.name ?? user.email,
+            email: user.email,
+            passwordHash: null,
+          });
+        }
+      }
+      return true;
+    },
+
+    // Add role to JWT on sign-in
+    async jwt({ token }) {
+      if (token.email) {
+        const user = findUserByEmail(token.email as string);
+        token.role = user?.role ?? "general";
+      }
+      return token;
+    },
+
+    // Expose role on session so components can read it
+    async session({ session, token }) {
+      if (session.user) {
+        (session.user as { role?: string }).role = token.role as string;
+      }
+      return session;
+    },
   },
 });
