@@ -3,7 +3,9 @@ import ThirdParty from "supertokens-web-js/recipe/thirdparty";
 import EmailVerification from "supertokens-web-js/recipe/emailverification";
 import Session from "supertokens-web-js/recipe/session";
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const appUrl = typeof window !== "undefined" 
+  ? window.location.origin 
+  : process.env.NEXT_PUBLIC_APP_URL ?? "https://upt-portal.vercel.app";
 
 export const frontendConfig = {
   appInfo: {
