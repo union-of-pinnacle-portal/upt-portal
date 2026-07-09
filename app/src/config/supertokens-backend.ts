@@ -27,8 +27,8 @@ export function getBackendConfig(): TypeInput {
     },
     appInfo: {
       appName: "UPT Portal",
-      apiDomain: process.env.NEXT_PUBLIC_APP_URL!,
-      websiteDomain: process.env.NEXT_PUBLIC_APP_URL!,
+      apiDomain: process.env.NEXT_PUBLIC_APP_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"),
+      websiteDomain: process.env.NEXT_PUBLIC_APP_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"),
       apiBasePath: "/api/auth",
       websiteBasePath: "/auth",
     },
