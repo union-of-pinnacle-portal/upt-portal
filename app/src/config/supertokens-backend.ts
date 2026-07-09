@@ -67,6 +67,20 @@ export function getBackendConfig(): TypeInput {
               },
             },
           }),
+          override: (originalImplementation) => {
+            return {
+              ...originalImplementation,
+              sendEmail: async (input) => {
+                try {
+                  await originalImplementation.sendEmail(input);
+                  console.log("Verification email sent to:", input.user.email);
+                } catch (error) {
+                  console.error("Failed to send verification email:", error);
+                  throw error;
+                }
+              },
+            };
+          },
         },
       }),
       Session.init(),
