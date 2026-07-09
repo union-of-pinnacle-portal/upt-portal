@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import EmailPassword from "supertokens-web-js/recipe/emailpassword";
@@ -19,7 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -57,7 +57,6 @@ export default function LoginPage() {
       return;
     }
 
-    // Check if email is verified before allowing dashboard access
     const verificationStatus = await EmailVerification.isEmailVerified();
     if (!verificationStatus.isVerified) {
       router.push("/auth/verify-email");
@@ -145,5 +144,13 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginPageContent />
+    </Suspense>
   );
 }
