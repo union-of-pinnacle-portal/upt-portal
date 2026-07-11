@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { BrandLogo } from "@/components/brand-logo";
 
 export default function VerifyEmailPage() {
   const router = useRouter();
@@ -71,7 +72,8 @@ export default function VerifyEmailPage() {
   }
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center bg-background p-6">
+    <div className="flex min-h-svh flex-col items-center justify-center gap-8 bg-muted/30 p-6">
+      <BrandLogo className="h-20" />
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl">Check your email</CardTitle>
