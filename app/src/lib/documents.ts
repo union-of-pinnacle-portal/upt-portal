@@ -1,5 +1,5 @@
 import "server-only";
-import { GetCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { GetCommand, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import { ddb } from "@/lib/aws/dynamo";
 import { BY_RANK_INDEX, TABLE_NAME } from "@/lib/aws/config";
 import type { Rank } from "@/lib/roles";
@@ -30,6 +30,53 @@ export interface PortalDocument {
 /** DynamoDB primary key for a document id. */
 function docKey(id: string) {
   return { pk: `DOC#${id}`, sk: `DOC#${id}` };
+}
+
+/**
+ * The S3 object key for a document, derived deterministically from its id and
+ * original filename. The upload-url and create routes both call this, so the
+ * server — never the client — decides where bytes live; a client cannot point
+ * a document's metadata at an arbitrary existing object.
+ */
+export function buildStorageKey(id: string, filename: string): string {
+  const safe = filename.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 200);
+  return `documents/${id}/${safe}`;
+}
+
+export interface CreateDocumentInput {
+  id: string;
+  title: string;
+  description?: string;
+  category: string;
+  minRank: Rank;
+  status: Exclude<DocumentStatus, "archived">;
+  storageKey: string;
+  originalFilename: string;
+  contentType: string;
+  sizeBytes: number;
+  uploadedBy: string;
+}
+
+/**
+ * Write a new document item. `createdAt`/`updatedAt` are stamped server-side.
+ * The condition guards against clobbering an existing id (uuid collisions or a
+ * duplicate submit).
+ */
+export async function createDocument(
+  input: CreateDocumentInput,
+): Promise<PortalDocument> {
+  const now = new Date().toISOString();
+  const doc: PortalDocument = { ...input, createdAt: now, updatedAt: now };
+
+  await ddb.send(
+    new PutCommand({
+      TableName: TABLE_NAME,
+      Item: { ...docKey(input.id), ...doc },
+      ConditionExpression: "attribute_not_exists(pk)",
+    }),
+  );
+
+  return doc;
 }
 
 /**

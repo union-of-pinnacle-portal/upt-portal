@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { getCurrentUser } from "@/lib/session";
 import { listPublishedForRank, type PortalDocument } from "@/lib/documents";
+import { canManageDocuments } from "@/lib/roles";
 import { SignOutButton } from "@/components/sign-out-button";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -49,7 +52,14 @@ export default async function DashboardPage() {
             {user.email} · Role: <strong>{user.role}</strong>
           </p>
         </div>
-        <SignOutButton />
+        <div className="flex items-center gap-2">
+          {canManageDocuments(user.role) ? (
+            <Button asChild size="sm">
+              <Link href="/documents/new">Upload document</Link>
+            </Button>
+          ) : null}
+          <SignOutButton />
+        </div>
       </header>
 
       {loadError ? (
