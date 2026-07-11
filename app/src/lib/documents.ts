@@ -1,5 +1,10 @@
 import "server-only";
-import { GetCommand, PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import {
+  GetCommand,
+  PutCommand,
+  QueryCommand,
+  UpdateCommand,
+} from "@aws-sdk/lib-dynamodb";
 import { ddb } from "@/lib/aws/dynamo";
 import { BY_RANK_INDEX, TABLE_NAME } from "@/lib/aws/config";
 import type { Rank } from "@/lib/roles";
@@ -112,6 +117,100 @@ export async function listPublishedForRank(
   return perRank
     .flatMap((res) => (res.Items ?? []) as PortalDocument[])
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+
+/**
+ * List every document for admin management, newest first, regardless of status
+ * (includes drafts and archived). Same GSI query as the member list but without
+ * the published filter. Committee-head only — callers must gate access.
+ */
+export async function listAllForAdmin(): Promise<PortalDocument[]> {
+  const perRank = await Promise.all(
+    [1, 2, 3].map((r) =>
+      ddb.send(
+        new QueryCommand({
+          TableName: TABLE_NAME,
+          IndexName: BY_RANK_INDEX,
+          KeyConditionExpression: "minRank = :r",
+          ExpressionAttributeValues: { ":r": r },
+          ScanIndexForward: false,
+        }),
+      ),
+    ),
+  );
+
+  return perRank
+    .flatMap((res) => (res.Items ?? []) as PortalDocument[])
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+
+/** The document fields an admin may edit after upload. */
+export interface UpdateDocumentInput {
+  title?: string;
+  description?: string;
+  category?: string;
+  minRank?: Rank;
+  status?: DocumentStatus;
+}
+
+/**
+ * Apply a partial metadata update to a document and bump `updatedAt`. Only the
+ * provided fields change. An empty-string `description` clears the attribute.
+ * Returns the updated document, or null if no document with that id exists.
+ */
+export async function updateDocument(
+  id: string,
+  patch: UpdateDocumentInput,
+): Promise<PortalDocument | null> {
+  const names: Record<string, string> = { "#updatedAt": "updatedAt" };
+  const values: Record<string, unknown> = {
+    ":updatedAt": new Date().toISOString(),
+  };
+  const sets: string[] = ["#updatedAt = :updatedAt"];
+  const removes: string[] = [];
+
+  const set = (attr: string, val: unknown) => {
+    names[`#${attr}`] = attr;
+    values[`:${attr}`] = val;
+    sets.push(`#${attr} = :${attr}`);
+  };
+
+  if (patch.title !== undefined) set("title", patch.title);
+  if (patch.category !== undefined) set("category", patch.category);
+  if (patch.minRank !== undefined) set("minRank", patch.minRank);
+  if (patch.status !== undefined) set("status", patch.status);
+  if (patch.description !== undefined) {
+    if (patch.description === "") {
+      names["#description"] = "description";
+      removes.push("#description");
+    } else {
+      set("description", patch.description);
+    }
+  }
+
+  let expression = `SET ${sets.join(", ")}`;
+  if (removes.length > 0) expression += ` REMOVE ${removes.join(", ")}`;
+
+  try {
+    const res = await ddb.send(
+      new UpdateCommand({
+        TableName: TABLE_NAME,
+        Key: docKey(id),
+        UpdateExpression: expression,
+        // Fail rather than resurrect a deleted/nonexistent document.
+        ConditionExpression: "attribute_exists(pk)",
+        ExpressionAttributeNames: names,
+        ExpressionAttributeValues: values,
+        ReturnValues: "ALL_NEW",
+      }),
+    );
+    return (res.Attributes as PortalDocument | undefined) ?? null;
+  } catch (err) {
+    if ((err as { name?: string }).name === "ConditionalCheckFailedException") {
+      return null;
+    }
+    throw err;
+  }
 }
 
 /** Fetch a single document by id, or null if it does not exist. */

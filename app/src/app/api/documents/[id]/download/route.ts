@@ -27,16 +27,18 @@ export async function GET(
   const { id } = await params;
   const doc = await getDocument(id);
 
-  // Hide non-existent, archived, and (for non-admins) unpublished documents
-  // behind an identical 404 so their existence can't be probed.
+  // Admins (committee heads) may download any document — including drafts and
+  // archived ones they are managing. Everyone else only sees published
+  // documents, and unpublished/archived/missing ones all return an identical
+  // 404 so their existence can't be probed.
   const isAdmin = canManageDocuments(user.role);
-  const viewable = doc && doc.status !== "archived" &&
-    (doc.status === "published" || isAdmin);
+  const viewable = doc && (isAdmin || doc.status === "published");
   if (!viewable) {
     return NextResponse.json({ error: "Not found." }, { status: 404 });
   }
 
   // Core RBAC check: the member's rank must clear the document's minRank.
+  // (Admins are rank 3, so this never blocks them.)
   if (!canViewRank(user.role, doc.minRank)) {
     return NextResponse.json({ error: "Not found." }, { status: 404 });
   }
