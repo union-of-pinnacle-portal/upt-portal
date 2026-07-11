@@ -81,7 +81,7 @@ function LoginPageContent() {
         <CardHeader>
           <CardTitle className="text-2xl">Sign in</CardTitle>
           <CardDescription>
-            Union of Pinnacle Tenants member portal. Use your Google account or
+            Use your Google account or
             email and password.
           </CardDescription>
         </CardHeader>
