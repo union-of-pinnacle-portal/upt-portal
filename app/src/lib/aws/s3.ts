@@ -14,7 +14,14 @@ import { AWS_REGION, DOCUMENTS_BUCKET } from "./config";
  * control is enforced by the app BEFORE a URL is minted — never rely on the
  * URL alone being secret.
  */
-export const s3 = new S3Client({ region: AWS_REGION });
+export const s3 = new S3Client({
+  region: AWS_REGION,
+  // SDK v3 defaults to adding a CRC32 checksum, which for a presigned PUT bakes
+  // the checksum of an EMPTY body into the signed URL — S3 then rejects the
+  // real bytes the browser uploads. "WHEN_REQUIRED" omits it so direct-to-S3
+  // browser uploads succeed.
+  requestChecksumCalculation: "WHEN_REQUIRED",
+});
 
 /** Default presigned-URL lifetime, in seconds (5 minutes). */
 const DEFAULT_EXPIRY_SECONDS = 300;

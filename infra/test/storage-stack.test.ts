@@ -1,5 +1,5 @@
 import * as cdk from 'aws-cdk-lib/core';
-import { Template } from 'aws-cdk-lib/assertions';
+import { Template, Match } from 'aws-cdk-lib/assertions';
 import { StorageStack } from '../lib/storage-stack';
 
 test('documents bucket blocks all public access', () => {
@@ -43,6 +43,24 @@ test('documents bucket is retained on stack deletion', () => {
   template.hasResource('AWS::S3::Bucket', {
     DeletionPolicy: 'Retain',
     UpdateReplacePolicy: 'Retain',
+  });
+});
+
+test('documents bucket allows browser PUT/GET via CORS', () => {
+  const app = new cdk.App();
+  const stack = new StorageStack(app, 'TestStorageStack');
+  const template = Template.fromStack(stack);
+
+  template.hasResourceProperties('AWS::S3::Bucket', {
+    CorsConfiguration: Match.objectLike({
+      CorsRules: [
+        Match.objectLike({
+          AllowedMethods: ['PUT', 'GET'],
+          AllowedOrigins: ['*'],
+          AllowedHeaders: ['*'],
+        }),
+      ],
+    }),
   });
 });
 

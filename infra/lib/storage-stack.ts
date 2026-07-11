@@ -4,6 +4,7 @@ import {
   Bucket,
   BlockPublicAccess,
   BucketEncryption,
+  HttpMethods,
 } from 'aws-cdk-lib/aws-s3';
 
 /**
@@ -31,6 +32,21 @@ export class StorageStack extends cdk.Stack {
       versioned: true,
       // SECURITY/SAFETY: never delete member documents on stack teardown.
       removalPolicy: cdk.RemovalPolicy.RETAIN,
+      // Browsers upload directly to S3 via presigned PUT URLs (and may fetch via
+      // presigned GET). CORS only governs which origins the browser lets script
+      // read the response from — it grants NO access; every request is still
+      // authorized by the presigned signature, which is minted only by the
+      // app's admin-gated endpoint. So a permissive origin is safe here and
+      // avoids enumerating Vercel's dynamic preview-deployment URLs.
+      cors: [
+        {
+          allowedOrigins: ['*'],
+          allowedMethods: [HttpMethods.PUT, HttpMethods.GET],
+          allowedHeaders: ['*'],
+          exposedHeaders: ['ETag'],
+          maxAge: 3000,
+        },
+      ],
     });
   }
 }
