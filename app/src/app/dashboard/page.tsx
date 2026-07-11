@@ -1,55 +1,92 @@
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
-import supertokens from "supertokens-node";
-import { getSSRSession } from "supertokens-node/lib/build/nextjs";
-import { getBackendConfig } from "@/config/supertokens-backend";
+import { getCurrentUser } from "@/lib/session";
+import { listPublishedForRank, type PortalDocument } from "@/lib/documents";
 import { SignOutButton } from "@/components/sign-out-button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 
-supertokens.init(getBackendConfig());
+// Documents come from DynamoDB per-request; never statically cache this page.
+export const dynamic = "force-dynamic";
+
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime())
+    ? "—"
+    : d.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+}
 
 export default async function DashboardPage() {
-  const cookieStore = await cookies();
-  const cookieList = cookieStore.getAll();
-
-  const { accessTokenPayload, hasToken, error } = await getSSRSession(cookieList);
-
-  if (error) {
+  const user = await getCurrentUser();
+  if (!user) {
     redirect("/auth/login");
   }
 
-  if (!hasToken || !accessTokenPayload) {
-    redirect("/auth/login");
+  // Isolate a data-store outage so the portal still renders (and tells the
+  // member) instead of throwing a 500.
+  let documents: PortalDocument[] = [];
+  let loadError = false;
+  try {
+    documents = await listPublishedForRank(user.rank);
+  } catch {
+    loadError = true;
   }
-
-  const role = (accessTokenPayload as { role?: string }).role ?? "general";
-  const email = (accessTokenPayload as { email?: string }).email ?? "";
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center bg-background p-6">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl">Dashboard</CardTitle>
-          <CardDescription>
-            {email} · Role: <strong>{role}</strong>
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+    <div className="mx-auto w-full max-w-3xl px-6 py-10">
+      <header className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">Documents</h1>
           <p className="text-sm text-muted-foreground">
-            You&apos;re logged in to the UPT Portal.
+            {user.email} · Role: <strong>{user.role}</strong>
           </p>
-        </CardContent>
-        <CardFooter>
-          <SignOutButton />
-        </CardFooter>
-      </Card>
+        </div>
+        <SignOutButton />
+      </header>
+
+      {loadError ? (
+        <p className="text-sm text-destructive">
+          Documents are temporarily unavailable. Please try again shortly.
+        </p>
+      ) : documents.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          No documents are available to your role yet.
+        </p>
+      ) : (
+        <ul className="flex flex-col gap-4">
+          {documents.map((doc) => (
+            <li key={doc.id}>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">
+                    <a
+                      href={`/api/documents/${doc.id}/download`}
+                      className="hover:underline"
+                    >
+                      {doc.title}
+                    </a>
+                  </CardTitle>
+                  {doc.description ? (
+                    <CardDescription>{doc.description}</CardDescription>
+                  ) : null}
+                </CardHeader>
+                <CardContent className="flex items-center justify-between text-sm text-muted-foreground">
+                  <span>{doc.category}</span>
+                  <span>Updated {formatDate(doc.updatedAt)}</span>
+                </CardContent>
+              </Card>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
