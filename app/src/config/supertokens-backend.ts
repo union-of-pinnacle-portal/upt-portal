@@ -1,3 +1,4 @@
+import supertokens from "supertokens-node";
 import ThirdParty from "supertokens-node/recipe/thirdparty";
 import EmailPassword from "supertokens-node/recipe/emailpassword";
 import EmailVerification from "supertokens-node/recipe/emailverification";
@@ -88,19 +89,23 @@ export function getBackendConfig(): TypeInput {
         override: {
           functions: (originalImplementation) => ({
             ...originalImplementation,
-            // Stamp the user's role (and derived numeric rank) into the access
-            // token at session creation. UserMetadata is the source of truth
-            // for role; rank is derived via @/lib/roles. Reading these from the
-            // session claim avoids a UserMetadata lookup on every authz check.
+            // Stamp the user's role (and derived numeric rank) plus email into
+            // the access token at session creation. UserMetadata is the source
+            // of truth for role; rank is derived via @/lib/roles. Reading these
+            // from the session claim avoids extra lookups on every request.
             createNewSession: async (input) => {
               const { metadata } = await UserMetadata.getUserMetadata(
                 input.userId,
               );
               const role = toRole(metadata.role);
+              // SuperTokens doesn't put email in the access token by default;
+              // fetch it once here so the UI/session can read it from the claim.
+              const user = await supertokens.getUser(input.userId);
               input.accessTokenPayload = {
                 ...input.accessTokenPayload,
                 role,
                 rank: rankForRole(role),
+                email: user?.emails?.[0] ?? "",
               };
               return originalImplementation.createNewSession(input);
             },
