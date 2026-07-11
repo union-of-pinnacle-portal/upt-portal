@@ -5,6 +5,7 @@ import Session from "supertokens-node/recipe/session";
 import UserMetadata from "supertokens-node/recipe/usermetadata";
 import { TypeInput } from "supertokens-node/types";
 import { SMTPService as EmailVerificationSMTPService } from "supertokens-node/recipe/emailverification/emaildelivery";
+import { rankForRole, toRole } from "@/lib/roles";
 
 /**
  * SuperTokens backend configuration.
@@ -83,7 +84,29 @@ export function getBackendConfig(): TypeInput {
           },
         },
       }),
-      Session.init(),
+      Session.init({
+        override: {
+          functions: (originalImplementation) => ({
+            ...originalImplementation,
+            // Stamp the user's role (and derived numeric rank) into the access
+            // token at session creation. UserMetadata is the source of truth
+            // for role; rank is derived via @/lib/roles. Reading these from the
+            // session claim avoids a UserMetadata lookup on every authz check.
+            createNewSession: async (input) => {
+              const { metadata } = await UserMetadata.getUserMetadata(
+                input.userId,
+              );
+              const role = toRole(metadata.role);
+              input.accessTokenPayload = {
+                ...input.accessTokenPayload,
+                role,
+                rank: rankForRole(role),
+              };
+              return originalImplementation.createNewSession(input);
+            },
+          }),
+        },
+      }),
       UserMetadata.init(),
     ],
   };
