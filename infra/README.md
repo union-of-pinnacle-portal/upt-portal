@@ -1,20 +1,27 @@
 # upt-portal — infrastructure
 
-AWS CDK v2 (TypeScript) app defining the **stateful** resources for the UPT
-tenants-union member portal. This package owns only durable data stores; it
-deliberately contains no compute, hosting, or app code.
+AWS CDK v2 (TypeScript) app defining the backend resources for the UPT
+tenants-union member portal — the durable data stores plus the IAM identity the
+app uses to reach them. It deliberately contains no compute or hosting (the app
+runs on Vercel).
 
-Two stacks:
+Three stacks:
 
 | Stack                    | Resource                                              |
 | ------------------------ | ----------------------------------------------------- |
 | `UptPortalStorageStack`  | Private S3 bucket `upt-portal-documents` for uploads  |
 | `UptPortalDataStack`     | DynamoDB table `upt-portal` (single-table design)     |
+| `UptPortalAccessStack`   | IAM user `upt-portal-app` scoped to the table+bucket  |
 
-Both stacks use `RemovalPolicy.RETAIN` — destroying a stack leaves the bucket
-and table (and their data) in place. The bucket blocks all public access; the
-app serves files only through short-lived presigned URLs. The table has
-point-in-time recovery and a TTL on `expiresAt`.
+The storage and data stacks use `RemovalPolicy.RETAIN` — destroying a stack
+leaves the bucket and table (and their data) in place. The bucket blocks all
+public access; the app serves files only through short-lived presigned URLs.
+The table has point-in-time recovery and a TTL on `expiresAt`.
+
+`UptPortalAccessStack` references the table and bucket **by name**, so deploy it
+after the other two exist. It grants its IAM user the minimum the app needs
+(read/write on the table + `by-rank` GSI; get/put on document objects) and
+nothing else. See [App credentials](#app-credentials) for how to mint its key.
 
 ## Prerequisites
 
@@ -36,7 +43,8 @@ npx cdk bootstrap
 # 3. Synthesize CloudFormation (no AWS changes) — good for review
 npx cdk synth
 
-# 4. Deploy both stacks
+# 4. Deploy all stacks (Access references the table/bucket by name, so the
+#    others must exist — `--all` deploys them in dependency order)
 npx cdk deploy --all
 ```
 
@@ -47,6 +55,32 @@ npm test              # run the jest assertion tests
 npm run build         # type-check / compile
 npx cdk diff --all    # compare deployed state with local
 ```
+
+## App credentials
+
+The app (on Vercel) authenticates to AWS as the `upt-portal-app` IAM user
+created by `UptPortalAccessStack`. The access **key** is intentionally not
+created by CDK, so its secret never lands in CloudFormation state or outputs.
+Mint it once, out of band, after deploying:
+
+```bash
+aws iam create-access-key --user-name upt-portal-app
+```
+
+This prints an `AccessKeyId` and a `SecretAccessKey` (the secret is shown only
+this once). Set them, plus the region and resource names, in the app's
+environment (Vercel → Project → Settings → Environment Variables):
+
+| Env var                    | Value                                  |
+| -------------------------- | -------------------------------------- |
+| `AWS_ACCESS_KEY_ID`        | the `AccessKeyId` from the command     |
+| `AWS_SECRET_ACCESS_KEY`    | the `SecretAccessKey` from the command |
+| `AWS_REGION`               | the region the stacks deployed to      |
+| `PORTAL_TABLE_NAME`        | `upt-portal` (default; override only if renamed)      |
+| `PORTAL_DOCUMENTS_BUCKET`  | `upt-portal-documents` (default; override if renamed) |
+
+To rotate: create a new access key, update Vercel, then delete the old one with
+`aws iam delete-access-key --user-name upt-portal-app --access-key-id <old>`.
 
 ## Data model (DynamoDB `upt-portal`)
 
