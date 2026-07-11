@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "set-role": "node --env-file=.env.local scripts/set-role.js"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.1085.0",
