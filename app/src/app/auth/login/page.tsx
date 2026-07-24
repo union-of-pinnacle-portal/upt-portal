@@ -11,6 +11,7 @@ import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { BrandLogo } from "@/components/brand-logo";
 import {
   Card,
   CardContent,
@@ -74,12 +75,14 @@ function LoginPageContent() {
   }
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center bg-background p-6">
+    <div className="flex min-h-svh flex-col items-center justify-center gap-8 bg-muted/30 p-6">
+      <BrandLogo className="h-20" />
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Sign in to UPT Portal</CardTitle>
+          <CardTitle className="text-2xl">Sign in</CardTitle>
           <CardDescription>
-            Use your Google account or email and password.
+            Use your Google account or
+            email and password.
           </CardDescription>
         </CardHeader>
 
@@ -118,7 +121,15 @@ function LoginPageContent() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label htmlFor="password">Password</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-xs text-muted-foreground underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <Input
                 id="password"
                 type="password"

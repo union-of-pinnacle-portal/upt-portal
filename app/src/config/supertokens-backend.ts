@@ -1,3 +1,4 @@
+import supertokens from "supertokens-node";
 import ThirdParty from "supertokens-node/recipe/thirdparty";
 import EmailPassword from "supertokens-node/recipe/emailpassword";
 import EmailVerification from "supertokens-node/recipe/emailverification";
@@ -5,6 +6,8 @@ import Session from "supertokens-node/recipe/session";
 import UserMetadata from "supertokens-node/recipe/usermetadata";
 import { TypeInput } from "supertokens-node/types";
 import { SMTPService as EmailVerificationSMTPService } from "supertokens-node/recipe/emailverification/emaildelivery";
+import { SMTPService as EmailPasswordSMTPService } from "supertokens-node/recipe/emailpassword/emaildelivery";
+import { rankForRole, toRole } from "@/lib/roles";
 
 /**
  * SuperTokens backend configuration.
@@ -31,9 +34,26 @@ export function getBackendConfig(): TypeInput {
       websiteDomain: process.env.NEXT_PUBLIC_APP_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"),
       apiBasePath: "/api/auth",
       websiteBasePath: "/auth",
+      // Password reset link points to /auth/reset-password
     },
     recipeList: [
-      EmailPassword.init(),
+      EmailPassword.init({
+        emailDelivery: {
+          service: new EmailPasswordSMTPService({
+            smtpSettings: {
+              host: "smtp.gmail.com",
+              port: 465,
+              secure: true,
+              authUsername: process.env.GMAIL_USER!,
+              password: process.env.GMAIL_APP_PASSWORD!,
+              from: {
+                name: "UPT Portal",
+                email: process.env.GMAIL_USER!,
+              },
+            },
+          }),
+        },
+      }),
       ThirdParty.init({
         signInAndUpFeature: {
           providers: [
@@ -83,7 +103,33 @@ export function getBackendConfig(): TypeInput {
           },
         },
       }),
-      Session.init(),
+      Session.init({
+        override: {
+          functions: (originalImplementation) => ({
+            ...originalImplementation,
+            // Stamp the user's role (and derived numeric rank) plus email into
+            // the access token at session creation. UserMetadata is the source
+            // of truth for role; rank is derived via @/lib/roles. Reading these
+            // from the session claim avoids extra lookups on every request.
+            createNewSession: async (input) => {
+              const { metadata } = await UserMetadata.getUserMetadata(
+                input.userId,
+              );
+              const role = toRole(metadata.role);
+              // SuperTokens doesn't put email in the access token by default;
+              // fetch it once here so the UI/session can read it from the claim.
+              const user = await supertokens.getUser(input.userId);
+              input.accessTokenPayload = {
+                ...input.accessTokenPayload,
+                role,
+                rank: rankForRole(role),
+                email: user?.emails?.[0] ?? "",
+              };
+              return originalImplementation.createNewSession(input);
+            },
+          }),
+        },
+      }),
       UserMetadata.init(),
     ],
   };
