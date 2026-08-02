@@ -63,6 +63,15 @@ function LoginPageContent() {
       router.push("/auth/verify-email");
       return;
     }
+
+    // Check if user has completed the one-time setup flow
+    const setupRes = await fetch("/api/auth/check-setup");
+    const setupData = await setupRes.json();
+    if (!setupData.setupComplete) {
+      router.push("/auth/setup");
+      return;
+    }
+
     router.push("/dashboard");
   }
 
@@ -121,12 +130,7 @@ function LoginPageContent() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link href="/auth/forgot-password" className="text-xs text-muted-foreground underline">
-                  Forgot password?
-                </Link>
-              </div>
+              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
