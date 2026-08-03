@@ -96,11 +96,29 @@ here — this package only provisions the table.
   role-based document list query (documents a member's rank may view, newest
   first)
 
+### Access levels
+
+Four levels, ascending. Read access is global and rank-based: a user sees any
+document whose `minRank` is at or below their own rank. The **stored role
+strings differ from the display names** (they predate the current naming and are
+kept as-is to avoid migrating live user records) — see `app/src/lib/roles.ts`.
+
+| Rank | Stored role       | Display name     |
+| ---- | ----------------- | ---------------- |
+| 1    | `general`         | General Member   |
+| 2    | `contributor`     | Committee Member |
+| 3    | `committee_chair` | Committee Chair  |
+| 4    | `committee_head`  | Super User       |
+
+Rank 3 was previously the top level (Super User). Documents written before
+Committee Chair existed carry `minRank: 3` meaning "Super Users only" and must
+be rewritten to `4` — see `app/scripts/migrate-minrank-3-to-4.js`.
+
 ### Item types
 
 | Entity            | pk                | sk                          | Fields |
 | ----------------- | ----------------- | --------------------------- | ------ |
-| **User**          | `USER#<email>`    | `USER#<email>`              | `email`, `name`, `role` (`general` \| `contributor` \| `committee_head`), `rank` (`1` \| `2` \| `3`), `createdAt`, `lastLoginAt` |
+| **User**          | `USER#<email>`    | `USER#<email>`              | `email`, `name`, `role` (`general` \| `contributor` \| `committee_chair` \| `committee_head`), `rank` (`1`–`4`), `createdAt`, `lastLoginAt` |
 | **Document**      | `DOC#<id>`        | `DOC#<id>`                  | `title`, `description`, `category`, `minRank` (`1` \| `2` \| `3`), `status` (`draft` \| `published` \| `archived`), `storageKey` (S3 object key), `originalFilename`, `contentType`, `sizeBytes`, `uploadedBy`, `createdAt`, `updatedAt` |
 | **MagicLink**     | `TOKEN#<token>`   | `TOKEN#<token>`             | `email`, `used`, `expiresAt` (epoch seconds, TTL) |
 | **Session**       | `SESSION#<id>`    | `SESSION#<id>`              | `email`, `expiresAt` (epoch seconds, TTL) |

@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Standalone Node CommonJS admin/migration utilities — run directly via
+    // `node --env-file`, never bundled into the app. The Next.js TS config
+    // forbids `require()`, which is the only way these can load their deps.
+    "scripts/**",
   ]),
 ]);
 
