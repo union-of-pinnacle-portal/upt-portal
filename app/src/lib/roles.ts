@@ -10,14 +10,14 @@
  *   ------------    ----   ------------------------------
  *   general           1    1
  *   contributor       2    1, 2
- *   committee_head    3    1, 2, 3
+ *   super_user    3    1, 2, 3
  *
  * Documents carry a numeric `minRank` (see infra data model); a user may view a
  * document when their rank >= the document's minRank. Storing rank as a number
  * lets the role-based document list be served by the `by-rank` GSI.
  */
 
-export const ROLES = ["general", "contributor", "committee_head"] as const;
+export const ROLES = ["general", "contributor", "super_user"] as const;
 export type Role = (typeof ROLES)[number];
 
 export type Rank = 1 | 2 | 3;
@@ -26,7 +26,7 @@ export type Rank = 1 | 2 | 3;
 const ROLE_TO_RANK: Record<Role, Rank> = {
   general: 1,
   contributor: 2,
-  committee_head: 3,
+  super_user: 3,
 };
 
 /** Default role for any user without one explicitly assigned. */
@@ -44,7 +44,7 @@ export function rankForRole(value: unknown): Rank {
 
 /** Only committee heads may upload and manage documents. */
 export function canManageDocuments(value: unknown): boolean {
-  return toRole(value) === "committee_head";
+  return toRole(value) === "super_user";
 }
 
 /**

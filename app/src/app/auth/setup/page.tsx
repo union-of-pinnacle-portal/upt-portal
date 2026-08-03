@@ -20,7 +20,7 @@ import {
  * /auth/setup
  *
  * Shown exactly once after a user's first login (email/password or Google).
- * Lets them optionally enter an admin access code to get committee_head role.
+ * Lets them optionally enter an admin access code to get super_user role.
  * If they skip or enter nothing, they stay as general member.
  *
  * After this page (submit or skip), they go to /dashboard and never see
@@ -75,8 +75,8 @@ export default function SetupPage() {
         body: JSON.stringify({ userId, secret: adminCode }),
       });
       const data = await res.json();
-      if (data.roleAssigned === "committee_head") {
-        setRoleAssigned("committee_head");
+      if (data.roleAssigned === "super_user") {
+        setRoleAssigned("super_user");
         setTimeout(() => router.push("/dashboard"), 2000);
         return;
       }
@@ -94,7 +94,7 @@ export default function SetupPage() {
     router.push("/dashboard");
   }
 
-  if (roleAssigned === "committee_head") {
+  if (roleAssigned === "super_user") {
     return (
       <div className="flex min-h-svh flex-col items-center justify-center gap-8 bg-muted/30 p-6">
         <BrandLogo className="h-20" />

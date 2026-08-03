@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 const ROLE_LABEL: Record<Role, string> = {
   general: "General member",
   contributor: "Contributor",
-  committee_head: "Committee head",
+  super_user: "Committee head",
 };
 
 const STATUS_STYLE: Record<DocumentStatus, string> = {
