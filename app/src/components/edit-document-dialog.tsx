@@ -20,7 +20,13 @@ import {
  * refreshes the table in place. The standalone /documents/[id]/edit page
  * remains as a deep-link fallback.
  */
-export function EditDocumentDialog({ doc }: { doc: EditableDocument }) {
+export function EditDocumentDialog({
+  doc,
+  categoryOptions = [],
+}: {
+  doc: EditableDocument;
+  categoryOptions?: string[];
+}) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
@@ -35,6 +41,7 @@ export function EditDocumentDialog({ doc }: { doc: EditableDocument }) {
         </DialogHeader>
         <DocumentEditForm
           doc={doc}
+          categoryOptions={categoryOptions}
           onSuccess={() => {
             setOpen(false);
             router.refresh();

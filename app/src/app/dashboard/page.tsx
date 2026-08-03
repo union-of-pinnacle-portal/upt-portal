@@ -7,6 +7,8 @@ import {
   type PortalDocument,
 } from "@/lib/documents";
 import { ROLE_LABEL } from "@/lib/roles";
+import { documentCategories } from "@/lib/categories";
+import { listCategoryNames } from "@/lib/category-store";
 import {
   canCreateRooms,
   listRooms,
@@ -61,14 +63,16 @@ export default async function DashboardPage({
   let documents: PortalDocument[] = [];
   let writableRooms: CommitteeRoom[] = [];
   let allRooms: CommitteeRoom[] = [];
+  let categoryOptions: string[] = [];
   let loadError = false;
   try {
     // Every room, not just writable ones: reads are global, so a document the
     // user may read can sit in a room they don't belong to, and it still needs
     // a name in the Room column.
-    [writableRooms, allRooms] = await Promise.all([
+    [writableRooms, allRooms, categoryOptions] = await Promise.all([
       listWritableRooms(user),
       listRooms(),
+      listCategoryNames(),
     ]);
     documents = await listVisibleForUser({
       rank: user.rank,
@@ -138,6 +142,7 @@ export default async function DashboardPage({
         {canUpload ? (
           <UploadDocumentDialog
             rooms={writableRooms}
+            categoryOptions={categoryOptions}
             canFileUnfiled={managesEverything}
           />
         ) : null}
@@ -186,7 +191,7 @@ export default async function DashboardPage({
                   <tr className="border-b border-border text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     <th className="px-4 py-3">Title</th>
                     <th className="px-4 py-3">Room</th>
-                    <th className="px-4 py-3">Category</th>
+                    <th className="px-4 py-3">Categories</th>
                     {showManagement ? (
                       <th className="px-4 py-3">Status</th>
                     ) : null}
@@ -225,8 +230,17 @@ export default async function DashboardPage({
                           <span className="text-muted-foreground/60">—</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 align-top text-muted-foreground">
-                        {doc.category}
+                      <td className="px-4 py-3 align-top">
+                        <div className="flex flex-wrap gap-1">
+                          {documentCategories(doc).map((category) => (
+                            <span
+                              key={category}
+                              className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground whitespace-nowrap"
+                            >
+                              {category}
+                            </span>
+                          ))}
+                        </div>
                       </td>
                       {showManagement ? (
                         <td className="px-4 py-3 align-top">
@@ -244,11 +258,12 @@ export default async function DashboardPage({
                         <td className="px-4 py-3 align-top text-right">
                           {canEdit(doc) ? (
                             <EditDocumentDialog
+                              categoryOptions={categoryOptions}
                               doc={{
                                 id: doc.id,
                                 title: doc.title,
                                 description: doc.description,
-                                category: doc.category,
+                                categories: documentCategories(doc),
                                 minRank: doc.minRank,
                                 status: doc.status,
                                 originalFilename: doc.originalFilename,

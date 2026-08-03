@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MIN_RANK_OPTIONS, type Rank } from "@/lib/roles";
+import { CategoryPicker } from "@/components/category-picker";
 
 const FIELD =
   "border-input bg-background flex w-full min-w-0 rounded-lg border px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
@@ -14,7 +15,8 @@ export interface EditableDocument {
   id: string;
   title: string;
   description?: string;
-  category: string;
+  /** Current categories, already normalized (legacy value folded in). */
+  categories: string[];
   minRank: Rank;
   status: "draft" | "published" | "archived";
   originalFilename: string;
@@ -30,10 +32,13 @@ export interface EditableDocument {
  */
 export function DocumentEditForm({
   doc,
+  categoryOptions = [],
   onSuccess,
   onCancel,
 }: {
   doc: EditableDocument;
+  /** The existing category vocabulary; the picker can also create new ones. */
+  categoryOptions?: string[];
   onSuccess?: () => void;
   onCancel?: () => void;
 }) {
@@ -46,6 +51,12 @@ export function DocumentEditForm({
     setError(null);
     const data = new FormData(e.currentTarget);
 
+    const categories = data.getAll("categories").map(String);
+    if (categories.length === 0) {
+      setError("Please choose at least one category.");
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -55,7 +66,7 @@ export function DocumentEditForm({
         body: JSON.stringify({
           title: data.get("title"),
           description: data.get("description"),
-          category: data.get("category"),
+          categories,
           minRank: Number(data.get("minRank")),
           status: data.get("status"),
         }),
@@ -99,16 +110,7 @@ export function DocumentEditForm({
         />
       </div>
 
-      <div className="grid gap-2">
-        <Label htmlFor="category">Category</Label>
-        <Input
-          id="category"
-          name="category"
-          defaultValue={doc.category}
-          required
-          maxLength={100}
-        />
-      </div>
+      <CategoryPicker options={categoryOptions} selected={doc.categories} />
 
       <div className="grid gap-2">
         <Label htmlFor="minRank">Who can view</Label>

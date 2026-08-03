@@ -7,6 +7,7 @@ import {
   updateDocument,
   type UpdateDocumentInput,
 } from "@/lib/documents";
+import { resolveCategories } from "@/lib/category-store";
 
 /**
  * PATCH /api/documents/:id
@@ -42,11 +43,8 @@ export async function PATCH(
     if (!title) errors.push("title cannot be empty.");
     else patch.title = title;
   }
-  if (body.category !== undefined) {
-    const category = String(body.category).trim();
-    if (!category) errors.push("category cannot be empty.");
-    else patch.category = category;
-  }
+  // `categories` is deliberately NOT resolved here: resolving can create new
+  // categories, so it has to wait until after the room write check below.
   if (body.description !== undefined) {
     patch.description =
       typeof body.description === "string" ? body.description.trim() : "";
@@ -73,7 +71,7 @@ export async function PATCH(
   if (errors.length > 0) {
     return NextResponse.json({ error: errors.join(" ") }, { status: 400 });
   }
-  if (Object.keys(patch).length === 0) {
+  if (body.categories === undefined && Object.keys(patch).length === 0) {
     return NextResponse.json(
       { error: "No editable fields provided." },
       { status: 400 },
@@ -89,6 +87,14 @@ export async function PATCH(
   // Room-scoped write check, against the room the document actually lives in.
   if (!(await canWriteInRoom(user, existing.roomId))) {
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+  }
+
+  if (body.categories !== undefined) {
+    const resolved = await resolveCategories(body.categories, user.email);
+    if (!resolved.ok) {
+      return NextResponse.json({ error: resolved.error }, { status: 400 });
+    }
+    patch.categories = resolved.categories;
   }
 
   const updated = await updateDocument(id, patch);

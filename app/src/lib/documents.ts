@@ -26,7 +26,16 @@ export interface PortalDocument {
   id: string;
   title: string;
   description?: string;
-  category: string;
+  /**
+   * One or more categories, resolved through lib/category-store.ts so the
+   * names stored here always match an existing category. Optional only because
+   * documents written before multi-category support carry a single free-text
+   * `category` instead; read them through `documentCategories()` rather than
+   * touching either field directly.
+   */
+  categories?: string[];
+  /** @deprecated Legacy single free-text category. Read-only; never written. */
+  category?: string;
   roomId?: string;
   minRank: Rank;
   status: DocumentStatus;
@@ -59,7 +68,7 @@ export interface CreateDocumentInput {
   id: string;
   title: string;
   description?: string;
-  category: string;
+  categories: string[];
   roomId?: string;
   minRank: Rank;
   status: Exclude<DocumentStatus, "archived">;
@@ -156,7 +165,7 @@ export async function listVisibleForUser(opts: {
 export interface UpdateDocumentInput {
   title?: string;
   description?: string;
-  category?: string;
+  categories?: string[];
   minRank?: Rank;
   status?: DocumentStatus;
 }
@@ -184,7 +193,14 @@ export async function updateDocument(
   };
 
   if (patch.title !== undefined) set("title", patch.title);
-  if (patch.category !== undefined) set("category", patch.category);
+  if (patch.categories !== undefined) {
+    set("categories", patch.categories);
+    // Drop the legacy single-category attribute so a document never carries
+    // both — `documentCategories()` prefers the array, but leaving a stale
+    // value behind invites the two drifting apart.
+    names["#category"] = "category";
+    removes.push("#category");
+  }
   if (patch.minRank !== undefined) set("minRank", patch.minRank);
   if (patch.status !== undefined) set("status", patch.status);
   if (patch.description !== undefined) {

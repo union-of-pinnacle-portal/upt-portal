@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/session";
 import { listWritableRooms, writesEverywhere } from "@/lib/rooms";
+import { listCategoryNames } from "@/lib/category-store";
 import { AppHeader } from "@/components/app-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { DocumentUploadForm } from "@/components/document-upload-form";
@@ -48,6 +49,7 @@ export default async function NewDocumentPage() {
           <CardContent className="py-6">
             <DocumentUploadForm
               rooms={rooms}
+              categoryOptions={await listCategoryNames()}
               canFileUnfiled={canFileUnfiled}
             />
           </CardContent>

@@ -10,6 +10,8 @@ import {
   writesEverywhere,
 } from "@/lib/rooms";
 import { listVisibleForUser, type DocumentStatus } from "@/lib/documents";
+import { documentCategories } from "@/lib/categories";
+import { listCategoryNames } from "@/lib/category-store";
 import { AppHeader } from "@/components/app-header";
 import { RoomMemberManager } from "@/components/room-member-manager";
 import { EditDocumentDialog } from "@/components/edit-document-dialog";
@@ -69,6 +71,7 @@ export default async function RoomPage({
   const canAssign = await canAssignInRoom(user, id);
   const canWrite = await canWriteInRoom(user, id);
   const members = await listRoomMembers(id);
+  const categoryOptions = canWrite ? await listCategoryNames() : [];
 
   // The room's documents, still bounded by the viewer's rank — a room page
   // never reveals anything the documents list wouldn't. Drafts and archived
@@ -117,7 +120,7 @@ export default async function RoomPage({
                   <thead>
                     <tr className="border-b border-border text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
                       <th className="px-4 py-3">Title</th>
-                      <th className="px-4 py-3">Category</th>
+                      <th className="px-4 py-3">Categories</th>
                       {canWrite ? <th className="px-4 py-3">Status</th> : null}
                       <th className="px-4 py-3 whitespace-nowrap">Updated</th>
                       {canWrite ? (
@@ -139,8 +142,17 @@ export default async function RoomPage({
                             {doc.title}
                           </a>
                         </td>
-                        <td className="px-4 py-3 align-top text-muted-foreground">
-                          {doc.category}
+                        <td className="px-4 py-3 align-top">
+                          <div className="flex flex-wrap gap-1">
+                            {documentCategories(doc).map((category) => (
+                              <span
+                                key={category}
+                                className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground whitespace-nowrap"
+                              >
+                                {category}
+                              </span>
+                            ))}
+                          </div>
                         </td>
                         {canWrite ? (
                           <td className="px-4 py-3 align-top">
@@ -157,11 +169,12 @@ export default async function RoomPage({
                         {canWrite ? (
                           <td className="px-4 py-3 align-top text-right">
                             <EditDocumentDialog
+                              categoryOptions={categoryOptions}
                               doc={{
                                 id: doc.id,
                                 title: doc.title,
                                 description: doc.description,
-                                category: doc.category,
+                                categories: documentCategories(doc),
                                 minRank: doc.minRank,
                                 status: doc.status,
                                 originalFilename: doc.originalFilename,

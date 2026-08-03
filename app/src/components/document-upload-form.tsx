@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MIN_RANK_OPTIONS } from "@/lib/roles";
+import { CategoryPicker } from "@/components/category-picker";
 
 // Shared styling for the native <select>/<textarea>, matching the Input component.
 const FIELD =
@@ -24,12 +25,15 @@ const FIELD =
  */
 export function DocumentUploadForm({
   rooms = [],
+  categoryOptions = [],
   canFileUnfiled = false,
   onSuccess,
   onCancel,
 }: {
   /** Committee Rooms this user may upload into. */
   rooms?: { id: string; name: string }[];
+  /** The existing category vocabulary; the picker can also create new ones. */
+  categoryOptions?: string[];
   /** Super Users may leave a document unfiled (no room). */
   canFileUnfiled?: boolean;
   onSuccess?: () => void;
@@ -48,6 +52,14 @@ export function DocumentUploadForm({
     const file = data.get("file") as File | null;
     if (!file || file.size === 0) {
       setError("Please choose a file.");
+      return;
+    }
+
+    // Checkboxes cannot express "required" natively, so the one-of check lives
+    // here; the API rejects an empty list too.
+    const categories = data.getAll("categories").map(String);
+    if (categories.length === 0) {
+      setError("Please choose at least one category.");
       return;
     }
 
@@ -85,7 +97,7 @@ export function DocumentUploadForm({
           id,
           title: data.get("title"),
           description: data.get("description"),
-          category: data.get("category"),
+          categories,
           roomId: data.get("roomId") || undefined,
           minRank: Number(data.get("minRank")),
           status: data.get("status"),
@@ -134,10 +146,7 @@ export function DocumentUploadForm({
         />
       </div>
 
-      <div className="grid gap-2">
-        <Label htmlFor="category">Category</Label>
-        <Input id="category" name="category" required maxLength={100} />
-      </div>
+      <CategoryPicker options={categoryOptions} />
 
       <div className="grid gap-2">
         <Label htmlFor="roomId">Committee room</Label>

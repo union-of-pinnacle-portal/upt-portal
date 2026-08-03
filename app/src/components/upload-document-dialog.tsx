@@ -20,9 +20,11 @@ import { DocumentUploadForm } from "@/components/document-upload-form";
  */
 export function UploadDocumentDialog({
   rooms = [],
+  categoryOptions = [],
   canFileUnfiled = false,
 }: {
   rooms?: { id: string; name: string }[];
+  categoryOptions?: string[];
   canFileUnfiled?: boolean;
 } = {}) {
   const [open, setOpen] = useState(false);
@@ -39,6 +41,7 @@ export function UploadDocumentDialog({
         </DialogHeader>
         <DocumentUploadForm
           rooms={rooms}
+          categoryOptions={categoryOptions}
           canFileUnfiled={canFileUnfiled}
           onSuccess={() => {
             setOpen(false);

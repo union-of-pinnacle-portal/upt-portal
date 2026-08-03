@@ -119,8 +119,9 @@ be rewritten to `4` — see `app/scripts/migrate-minrank-3-to-4.js`.
 | Entity            | pk                | sk                          | Fields |
 | ----------------- | ----------------- | --------------------------- | ------ |
 | **User**          | `USER#<email>`    | `USER#<email>`              | `email`, `name`, `role` (`general` \| `contributor` \| `committee_chair` \| `committee_head`), `rank` (`1`–`4`), `createdAt`, `lastLoginAt` |
-| **Document**      | `DOC#<id>`        | `DOC#<id>`                  | `title`, `description`, `category`, `roomId` (optional), `minRank` (`1`–`4`), `status` (`draft` \| `published` \| `archived`), `storageKey` (S3 object key), `originalFilename`, `contentType`, `sizeBytes`, `uploadedBy`, `createdAt`, `updatedAt` |
+| **Document**      | `DOC#<id>`        | `DOC#<id>`                  | `title`, `description`, `categories` (string list of canonical category names; pre-multi-category items instead carry a single free-text `category`), `roomId` (optional), `minRank` (`1`–`4`), `status` (`draft` \| `published` \| `archived`), `storageKey` (S3 object key), `originalFilename`, `contentType`, `sizeBytes`, `uploadedBy`, `createdAt`, `updatedAt` |
 | **Committee Room**| `ROOMS`           | `ROOM#<id>`                 | `id`, `name`, `description`, `createdBy`, `createdAt` |
+| **Category**      | `CATEGORIES`      | `CAT#<key>`                 | `name` (display), `key` (lower-cased `name` — the case-insensitive identity), `createdBy`, `createdAt`. Created inline by anyone who may upload; seed with `npm run seed-categories`. |
 | **Membership**    | `USER#<email>`    | `ROOM#<id>`                 | `roomId`, `email`, `assignedBy`, `assignedAt` |
 | **Membership** (mirror) | `ROOM#<id>` | `MEMBER#<email>`            | same attributes — see note below |
 | **MagicLink**     | `TOKEN#<token>`   | `TOKEN#<token>`             | `email`, `used`, `expiresAt` (epoch seconds, TTL) |

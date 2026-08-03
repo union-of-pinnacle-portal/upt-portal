@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/session";
 import { isRank, RANKS } from "@/lib/roles";
 import { canWriteInRoom, getRoom, writesEverywhere } from "@/lib/rooms";
 import { buildStorageKey, createDocument } from "@/lib/documents";
+import { resolveCategories } from "@/lib/category-store";
 import type { Rank } from "@/lib/roles";
 
 /**
@@ -33,7 +34,6 @@ export async function POST(req: Request) {
   const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
   const id = str(body.id);
   const title = str(body.title);
-  const category = str(body.category);
   const description = str(body.description);
   const originalFilename = str(body.originalFilename);
   const contentType = str(body.contentType) || "application/octet-stream";
@@ -45,7 +45,6 @@ export async function POST(req: Request) {
   const errors: string[] = [];
   if (!id) errors.push("id is required.");
   if (!title) errors.push("title is required.");
-  if (!category) errors.push("category is required.");
   if (!originalFilename) errors.push("originalFilename is required.");
   if (!isRank(minRank)) {
     errors.push(`minRank must be one of ${RANKS.join(", ")}.`);
@@ -77,11 +76,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
 
+  // Only now, past the permission check — resolving may create new categories,
+  // and a request that goes on to 403 must not leave any behind.
+  const resolved = await resolveCategories(body.categories, user.email);
+  if (!resolved.ok) {
+    return NextResponse.json({ error: resolved.error }, { status: 400 });
+  }
+
   const doc = await createDocument({
     id,
     title,
     description: description || undefined,
-    category,
+    categories: resolved.categories,
     roomId,
     minRank: minRank as Rank,
     status: status as "draft" | "published",

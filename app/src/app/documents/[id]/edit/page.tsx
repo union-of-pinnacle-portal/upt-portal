@@ -3,6 +3,8 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/session";
 import { canWriteInRoom } from "@/lib/rooms";
 import { getDocument } from "@/lib/documents";
+import { documentCategories } from "@/lib/categories";
+import { listCategoryNames } from "@/lib/category-store";
 import { AppHeader } from "@/components/app-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { DocumentEditForm } from "@/components/document-edit-form";
@@ -56,11 +58,12 @@ export default async function EditDocumentPage({
         <Card>
           <CardContent className="py-6">
             <DocumentEditForm
+              categoryOptions={await listCategoryNames()}
               doc={{
                 id: doc.id,
                 title: doc.title,
                 description: doc.description,
-                category: doc.category,
+                categories: documentCategories(doc),
                 minRank: doc.minRank,
                 status: doc.status,
                 originalFilename: doc.originalFilename,
