@@ -119,14 +119,36 @@ be rewritten to `4` — see `app/scripts/migrate-minrank-3-to-4.js`.
 | Entity            | pk                | sk                          | Fields |
 | ----------------- | ----------------- | --------------------------- | ------ |
 | **User**          | `USER#<email>`    | `USER#<email>`              | `email`, `name`, `role` (`general` \| `contributor` \| `committee_chair` \| `committee_head`), `rank` (`1`–`4`), `createdAt`, `lastLoginAt` |
-| **Document**      | `DOC#<id>`        | `DOC#<id>`                  | `title`, `description`, `category`, `minRank` (`1` \| `2` \| `3`), `status` (`draft` \| `published` \| `archived`), `storageKey` (S3 object key), `originalFilename`, `contentType`, `sizeBytes`, `uploadedBy`, `createdAt`, `updatedAt` |
+| **Document**      | `DOC#<id>`        | `DOC#<id>`                  | `title`, `description`, `category`, `roomId` (optional), `minRank` (`1`–`4`), `status` (`draft` \| `published` \| `archived`), `storageKey` (S3 object key), `originalFilename`, `contentType`, `sizeBytes`, `uploadedBy`, `createdAt`, `updatedAt` |
+| **Committee Room**| `ROOMS`           | `ROOM#<id>`                 | `id`, `name`, `description`, `createdBy`, `createdAt` |
+| **Membership**    | `USER#<email>`    | `ROOM#<id>`                 | `roomId`, `email`, `assignedBy`, `assignedAt` |
+| **Membership** (mirror) | `ROOM#<id>` | `MEMBER#<email>`            | same attributes — see note below |
 | **MagicLink**     | `TOKEN#<token>`   | `TOKEN#<token>`             | `email`, `used`, `expiresAt` (epoch seconds, TTL) |
 | **Session**       | `SESSION#<id>`    | `SESSION#<id>`              | `email`, `expiresAt` (epoch seconds, TTL) |
 | **Download log**  | `DOC#<id>`        | `LOG#<timestamp>#<email>`   | `email` |
 
 The `by-rank` GSI is populated by Document items (which carry `minRank` and
 `updatedAt`); other entity types omit those attributes and so do not appear in
-the index.
+the index — Room and Membership items included.
+
+### Committee Rooms
+
+A room scopes **writes**, never reads. Membership decides who may upload or edit
+documents filed to that room; what a user can *see* is decided solely by their
+rank (above), in every room at once. A document with no `roomId` is "unfiled"
+and writable only by Super Users — that covers documents created before rooms
+existed.
+
+Two storage details worth knowing before changing this:
+
+- **All rooms share the `ROOMS` partition**, so listing them is one Query with
+  no extra GSI. A union has a handful of committees, so the usual hot-partition
+  warning does not apply at this scale.
+- **Memberships are written twice**, under both `USER#<email>` and
+  `ROOM#<id>`, in a single `TransactWriteItems` call. Both directions are
+  needed — per-user for the authorization check on every write, per-room for the
+  roster UI — and the transaction is what keeps them from disagreeing. Any code
+  that writes a membership must write both, or the two views drift.
 
 ## S3 bucket (`upt-portal-documents`)
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/session";
-import { canManageDocuments } from "@/lib/roles";
+import { isRank, RANKS } from "@/lib/roles";
+import { canWriteInRoom } from "@/lib/rooms";
 import {
   getDocument,
   updateDocument,
@@ -10,9 +11,13 @@ import {
 /**
  * PATCH /api/documents/:id
  *
- * Admin metadata management: edit title/description/category, change the
- * allowed rank, and move between draft/published/archived (publish, unpublish,
- * archive). Committee heads only. Only the provided fields change.
+ * Metadata management: edit title/description/category, change the allowed
+ * rank, and move between draft/published/archived (publish, unpublish,
+ * archive). Only the provided fields change.
+ *
+ * Authorization is scoped to the document's own Committee Room — the caller
+ * must be able to write *that* room, not merely hold a senior role. The room
+ * itself is not editable here (see UpdateDocumentInput).
  */
 export async function PATCH(
   req: Request,
@@ -22,10 +27,6 @@ export async function PATCH(
   if (!user) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
-  if (!canManageDocuments(user.role)) {
-    return NextResponse.json({ error: "Forbidden." }, { status: 403 });
-  }
-
   let body: Record<string, unknown>;
   try {
     body = await req.json();
@@ -51,8 +52,8 @@ export async function PATCH(
       typeof body.description === "string" ? body.description.trim() : "";
   }
   if (body.minRank !== undefined) {
-    if (body.minRank !== 1 && body.minRank !== 2 && body.minRank !== 3) {
-      errors.push("minRank must be 1, 2, or 3.");
+    if (!isRank(body.minRank)) {
+      errors.push(`minRank must be one of ${RANKS.join(", ")}.`);
     } else {
       patch.minRank = body.minRank;
     }
@@ -83,6 +84,11 @@ export async function PATCH(
   const existing = await getDocument(id);
   if (!existing) {
     return NextResponse.json({ error: "Not found." }, { status: 404 });
+  }
+
+  // Room-scoped write check, against the room the document actually lives in.
+  if (!(await canWriteInRoom(user, existing.roomId))) {
+    return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
 
   const updated = await updateDocument(id, patch);

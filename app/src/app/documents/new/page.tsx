@@ -1,9 +1,8 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/session";
-import { canManageDocuments } from "@/lib/roles";
+import { listWritableRooms, writesEverywhere } from "@/lib/rooms";
 import { AppHeader } from "@/components/app-header";
-import { SignOutButton } from "@/components/sign-out-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DocumentUploadForm } from "@/components/document-upload-form";
 
@@ -11,25 +10,29 @@ import { DocumentUploadForm } from "@/components/document-upload-form";
 export const dynamic = "force-dynamic";
 
 /**
- * Admin-only upload page. This server gate is the authoritative access check —
- * middleware only verifies a session exists, so role enforcement lives here:
- * no session → login; non-admin → dashboard.
+ * Standalone upload page (the dashboard's modal is the usual route in). This
+ * server gate is the authoritative access check — middleware only verifies a
+ * session exists: no session → login; nowhere to upload to → dashboard.
+ *
+ * "Nowhere to upload to" means no Committee Room this user may write in. Super
+ * Users pass regardless, since they may file a document with no room at all.
  */
 export default async function NewDocumentPage() {
   const user = await getCurrentUser();
   if (!user) {
     redirect("/auth/login");
   }
-  if (!canManageDocuments(user.role)) {
+
+  const canFileUnfiled = writesEverywhere(user.role);
+  const rooms = await listWritableRooms(user);
+  if (!canFileUnfiled && rooms.length === 0) {
     redirect("/dashboard");
   }
 
   return (
     <div className="min-h-svh bg-muted/30">
-      <AppHeader>
-        <SignOutButton />
-      </AppHeader>
-      <main className="mx-auto w-full max-w-xl px-6 py-8">
+      <AppHeader />
+      <main className="mx-auto w-full max-w-2xl px-6 py-8">
         <div className="mb-6">
           <Link
             href="/dashboard"
@@ -43,7 +46,10 @@ export default async function NewDocumentPage() {
         </div>
         <Card>
           <CardContent className="py-6">
-            <DocumentUploadForm />
+            <DocumentUploadForm
+              rooms={rooms}
+              canFileUnfiled={canFileUnfiled}
+            />
           </CardContent>
         </Card>
       </main>

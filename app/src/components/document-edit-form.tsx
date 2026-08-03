@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MIN_RANK_OPTIONS, type Rank } from "@/lib/roles";
 
 const FIELD =
   "border-input bg-background flex w-full min-w-0 rounded-lg border px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
@@ -14,7 +15,7 @@ export interface EditableDocument {
   title: string;
   description?: string;
   category: string;
-  minRank: 1 | 2 | 3;
+  minRank: Rank;
   status: "draft" | "published" | "archived";
   originalFilename: string;
 }
@@ -23,8 +24,19 @@ export interface EditableDocument {
  * Admin edit form for a document's metadata. Sends a PATCH with only the
  * editable fields; the file itself is not replaceable here (P0 edits metadata
  * only). Status covers publish/unpublish/archive.
+ *
+ * `onSuccess`/`onCancel` let a host (e.g. a modal) take over on save/cancel;
+ * without them the form navigates back to the dashboard (standalone page use).
  */
-export function DocumentEditForm({ doc }: { doc: EditableDocument }) {
+export function DocumentEditForm({
+  doc,
+  onSuccess,
+  onCancel,
+}: {
+  doc: EditableDocument;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,6 +45,7 @@ export function DocumentEditForm({ doc }: { doc: EditableDocument }) {
     e.preventDefault();
     setError(null);
     const data = new FormData(e.currentTarget);
+
     setSubmitting(true);
 
     try {
@@ -50,8 +63,13 @@ export function DocumentEditForm({ doc }: { doc: EditableDocument }) {
       if (!res.ok) {
         throw new Error((await res.json()).error ?? "Could not save changes.");
       }
-      router.push("/dashboard");
-      router.refresh();
+      if (onSuccess) {
+        onSuccess();
+        router.refresh();
+      } else {
+        router.push("/dashboard");
+        router.refresh();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
       setSubmitting(false);
@@ -61,8 +79,7 @@ export function DocumentEditForm({ doc }: { doc: EditableDocument }) {
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-5">
       <p className="text-sm text-muted-foreground">
-        File: <span className="font-mono">{doc.originalFilename}</span> (cannot
-        be changed here)
+        File: <span className="font-mono">{doc.originalFilename}</span>
       </p>
 
       <div className="grid gap-2">
@@ -101,9 +118,11 @@ export function DocumentEditForm({ doc }: { doc: EditableDocument }) {
           defaultValue={String(doc.minRank)}
           className={FIELD}
         >
-          <option value="1">All members (general and up)</option>
-          <option value="2">Contributors and committee heads</option>
-          <option value="3">Committee heads only</option>
+          {MIN_RANK_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -130,7 +149,7 @@ export function DocumentEditForm({ doc }: { doc: EditableDocument }) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push("/dashboard")}
+          onClick={() => (onCancel ? onCancel() : router.push("/dashboard"))}
           disabled={submitting}
         >
           Cancel
