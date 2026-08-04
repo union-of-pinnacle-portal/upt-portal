@@ -12,8 +12,11 @@ export function SignOutButton() {
     router.push("/auth/login");
   }
 
+  // `sm` matches the header's other actions (they were previously mismatched
+  // heights), and `ghost` keeps sign out from competing with the primary
+  // action next to it.
   return (
-    <Button variant="outline" onClick={handleSignOut}>
+    <Button variant="ghost" size="sm" onClick={handleSignOut}>
       Sign out
     </Button>
   );

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MIN_RANK_OPTIONS } from "@/lib/roles";
+import { CategoryPicker } from "@/components/category-picker";
 
 // Shared styling for the native <select>/<textarea>, matching the Input component.
 const FIELD =
@@ -17,8 +19,26 @@ const FIELD =
  *   3. POST /api/documents             → persist metadata
  * The server enforces committee-head access on steps 1 and 3; this form is
  * only reachable by admins, so failures here are unexpected and surfaced.
+ *
+ * `onSuccess`/`onCancel` let a host (e.g. a modal) take over on save/cancel;
+ * without them the form navigates back to the dashboard (standalone page use).
  */
-export function DocumentUploadForm() {
+export function DocumentUploadForm({
+  rooms = [],
+  categoryOptions = [],
+  canFileUnfiled = false,
+  onSuccess,
+  onCancel,
+}: {
+  /** Committee Rooms this user may upload into. */
+  rooms?: { id: string; name: string }[];
+  /** The existing category vocabulary; the picker can also create new ones. */
+  categoryOptions?: string[];
+  /** Super Users may leave a document unfiled (no room). */
+  canFileUnfiled?: boolean;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+} = {}) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +52,14 @@ export function DocumentUploadForm() {
     const file = data.get("file") as File | null;
     if (!file || file.size === 0) {
       setError("Please choose a file.");
+      return;
+    }
+
+    // Checkboxes cannot express "required" natively, so the one-of check lives
+    // here; the API rejects an empty list too.
+    const categories = data.getAll("categories").map(String);
+    if (categories.length === 0) {
+      setError("Please choose at least one category.");
       return;
     }
 
@@ -69,7 +97,8 @@ export function DocumentUploadForm() {
           id,
           title: data.get("title"),
           description: data.get("description"),
-          category: data.get("category"),
+          categories,
+          roomId: data.get("roomId") || undefined,
           minRank: Number(data.get("minRank")),
           status: data.get("status"),
           originalFilename: file.name,
@@ -81,8 +110,13 @@ export function DocumentUploadForm() {
         throw new Error((await metaRes.json()).error ?? "Could not save the document.");
       }
 
-      router.push("/dashboard");
-      router.refresh();
+      if (onSuccess) {
+        onSuccess();
+        router.refresh();
+      } else {
+        router.push("/dashboard");
+        router.refresh();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
       setSubmitting(false);
@@ -112,17 +146,40 @@ export function DocumentUploadForm() {
         />
       </div>
 
+      <CategoryPicker options={categoryOptions} />
+
       <div className="grid gap-2">
-        <Label htmlFor="category">Category</Label>
-        <Input id="category" name="category" required maxLength={100} />
+        <Label htmlFor="roomId">Committee room</Label>
+        <select
+          id="roomId"
+          name="roomId"
+          className={FIELD}
+          required={!canFileUnfiled}
+          defaultValue={canFileUnfiled ? "" : (rooms[0]?.id ?? "")}
+        >
+          {/* Only Super Users get the unfiled option; for everyone else the
+              room is what authorizes the upload, so it cannot be blank. */}
+          {canFileUnfiled ? <option value="">No room (unfiled)</option> : null}
+          {rooms.map((room) => (
+            <option key={room.id} value={room.id}>
+              {room.name}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-muted-foreground">
+          Controls who can edit this document later. It does not affect who can
+          see it — that is “Who can view” below.
+        </p>
       </div>
 
       <div className="grid gap-2">
         <Label htmlFor="minRank">Who can view</Label>
         <select id="minRank" name="minRank" defaultValue="1" className={FIELD}>
-          <option value="1">All members (general and up)</option>
-          <option value="2">Contributors and committee heads</option>
-          <option value="3">Committee heads only</option>
+          {MIN_RANK_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -143,7 +200,7 @@ export function DocumentUploadForm() {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push("/dashboard")}
+          onClick={() => (onCancel ? onCancel() : router.push("/dashboard"))}
           disabled={submitting}
         >
           Cancel
