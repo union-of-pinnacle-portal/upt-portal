@@ -23,7 +23,6 @@ export default function RegisterPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [adminSecret, setAdminSecret] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -58,18 +57,6 @@ export default function RegisterPage() {
       setError("Something went wrong. Please try again.");
       setIsSubmitting(false);
       return;
-    }
-
-    // If admin secret was provided, attempt role elevation
-    if (adminSecret.trim()) {
-      await fetch("/api/auth/set-admin-role", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: response.user.id,
-          secret: adminSecret,
-        }),
-      });
     }
 
     // Manually trigger verification email (required when using custom UI)
@@ -137,23 +124,6 @@ export default function RegisterPage() {
                 required
               />
               <p className="text-xs text-muted-foreground">Minimum 8 characters</p>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="adminSecret">
-                Admin access code{" "}
-                <span className="text-muted-foreground font-normal">(optional)</span>
-              </Label>
-              <Input
-                id="adminSecret"
-                type="password"
-                value={adminSecret}
-                onChange={(e) => setAdminSecret(e.target.value)}
-                placeholder="Leave blank if not an admin"
-              />
-              <p className="text-xs text-muted-foreground">
-                Only for the initial committee head setup.
-              </p>
             </div>
 
             {error && <p className="text-sm text-destructive">{error}</p>}

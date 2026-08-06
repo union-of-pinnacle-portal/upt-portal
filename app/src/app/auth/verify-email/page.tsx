@@ -30,7 +30,8 @@ export default function VerifyEmailPage() {
         try {
           const response = await EmailVerification.verifyEmail();
           if (response.status === "OK") {
-            router.push("/auth/login?verified=true");
+            // Go to setup page for admin code prompt on first login
+            router.push("/auth/setup");
             return;
           } else {
             setMessage("Verification failed. The link may have expired.");

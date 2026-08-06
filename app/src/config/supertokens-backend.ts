@@ -6,6 +6,7 @@ import Session from "supertokens-node/recipe/session";
 import UserMetadata from "supertokens-node/recipe/usermetadata";
 import { TypeInput } from "supertokens-node/types";
 import { SMTPService as EmailVerificationSMTPService } from "supertokens-node/recipe/emailverification/emaildelivery";
+import { SMTPService as EmailPasswordSMTPService } from "supertokens-node/recipe/emailpassword/emaildelivery";
 import { rankForRole, toRole } from "@/lib/roles";
 
 /**
@@ -35,7 +36,20 @@ export function getBackendConfig(): TypeInput {
       websiteBasePath: "/auth",
     },
     recipeList: [
-      EmailPassword.init(),
+      EmailPassword.init({
+        emailDelivery: {
+          service: new EmailPasswordSMTPService({
+            smtpSettings: {
+              host: "smtp.gmail.com",
+              port: 465,
+              secure: true,
+              authUsername: process.env.GMAIL_USER!,
+              password: process.env.GMAIL_APP_PASSWORD!,
+              from: { name: "UPT Portal", email: process.env.GMAIL_USER! },
+            },
+          }),
+        },
+      }),
       ThirdParty.init({
         signInAndUpFeature: {
           providers: [

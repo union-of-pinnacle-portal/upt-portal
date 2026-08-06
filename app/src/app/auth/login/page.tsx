@@ -63,6 +63,15 @@ function LoginPageContent() {
       router.push("/auth/verify-email");
       return;
     }
+
+    // Check if user has completed the one-time setup flow
+    const setupRes = await fetch("/api/auth/check-setup");
+    const setupData = await setupRes.json();
+    if (!setupData.setupComplete) {
+      router.push("/auth/setup");
+      return;
+    }
+
     router.push("/dashboard");
   }
 
