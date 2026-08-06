@@ -12,16 +12,22 @@ import { RANKS, type Rank } from "@/lib/roles";
 export type DocumentStatus = "draft" | "published" | "archived";
 
 /**
- * A document as stored under `pk = sk = DOC#<id>` (see infra data model).
- * `minRank` is the lowest rank allowed to view it and is the partition key of
- * the `by-rank` GSI that serves the role-based list.
+ * A document is one of two kinds:
+ *  "file" — an uploaded binary (PDF, DOCX, etc.). Body in S3, served via
+ *            presigned download URL. Default for all existing documents.
+ *  "page" — authored in the portal with the Lexical editor. Body in S3 as
+ *            JSON, served via the content API. Never triggers a file download.
  *
- * `roomId` is the Committee Room the document belongs to. It scopes WRITES
- * only — who may edit or replace it — never reads, which stay global and
- * rank-based. It is optional because documents uploaded before Committee Rooms
- * existed have no room; those are "unfiled" and writable only by Super Users
- * (see lib/rooms.ts `canWriteInRoom`).
+ * `kind` is absent on documents created before this feature; treat those as
+ * "file" via the `documentKind()` helper — no migration needed.
  */
+export type DocumentKind = "file" | "page";
+
+/** Safe accessor — absent means "file" (backwards compat). */
+export function documentKind(doc: PortalDocument): DocumentKind {
+  return doc.kind ?? "file";
+}
+
 export interface PortalDocument {
   id: string;
   title: string;
@@ -39,6 +45,8 @@ export interface PortalDocument {
   roomId?: string;
   minRank: Rank;
   status: DocumentStatus;
+  /** "file" | "page". Absent on legacy docs — use documentKind(). */
+  kind?: DocumentKind;
   storageKey: string;
   originalFilename: string;
   contentType: string;
@@ -64,6 +72,14 @@ export function buildStorageKey(id: string, filename: string): string {
   return `documents/${id}/${safe}`;
 }
 
+/**
+ * S3 key for the Lexical JSON content of a page document.
+ * Separate from the file storageKey so file and page bodies never collide.
+ */
+export function buildContentKey(id: string): string {
+  return `pages/${id}/content.json`;
+}
+
 export interface CreateDocumentInput {
   id: string;
   title: string;
@@ -72,6 +88,7 @@ export interface CreateDocumentInput {
   roomId?: string;
   minRank: Rank;
   status: Exclude<DocumentStatus, "archived">;
+  kind?: DocumentKind;
   storageKey: string;
   originalFilename: string;
   contentType: string;

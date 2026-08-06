@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/session";
 import {
   listVisibleForUser,
+  documentKind,
   type DocumentStatus,
   type PortalDocument,
 } from "@/lib/documents";
@@ -57,18 +58,12 @@ export default async function DashboardPage({
 
   const managesEverything = writesEverywhere(user.role);
 
-  // Which rooms this user may write in drives both the upload action and
-  // whether they see their rooms' drafts. Isolate a data-store outage so the
-  // portal still renders (and tells the user) instead of throwing a 500.
   let documents: PortalDocument[] = [];
   let writableRooms: CommitteeRoom[] = [];
   let allRooms: CommitteeRoom[] = [];
   let categoryOptions: string[] = [];
   let loadError = false;
   try {
-    // Every room, not just writable ones: reads are global, so a document the
-    // user may read can sit in a room they don't belong to, and it still needs
-    // a name in the Room column.
     [writableRooms, allRooms, categoryOptions] = await Promise.all([
       listWritableRooms(user),
       listRooms(),
@@ -85,8 +80,6 @@ export default async function DashboardPage({
 
   const roomName = new Map(allRooms.map((r) => [r.id, r.name]));
 
-  // Room filter. `UNFILED` selects documents with no room at all; an unknown
-  // value falls through to showing everything rather than an empty table.
   const params = await searchParams;
   const selectedRoom = params.room ?? "";
   const filtered =
@@ -96,14 +89,8 @@ export default async function DashboardPage({
         ? documents.filter((d) => d.roomId === selectedRoom)
         : documents;
 
-  // Super Users can always upload (they may leave a document unfiled, which is
-  // also how the very first upload happens before any room exists). Everyone
-  // else needs at least one room they belong to.
   const canUpload = managesEverything || writableRooms.length > 0;
 
-  // Offset pagination over the sorted result. Fine for the realistic corpus
-  // (hundreds of docs); if it ever grows into the many-thousands, swap to
-  // cursor-based DynamoDB paging without changing this UI.
   const total = filtered.length;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const requested = Number.parseInt(params.page ?? "1", 10);
@@ -113,18 +100,13 @@ export default async function DashboardPage({
   );
   const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  // Edit is decided per document, not per user: a Chair may manage documents in
-  // their own rooms while merely reading everything else on the same page.
   const writableRoomIds = new Set(writableRooms.map((r) => r.id));
   const canEdit = (doc: PortalDocument) =>
     managesEverything ||
     (doc.roomId !== undefined && writableRoomIds.has(doc.roomId));
 
-  // The management columns appear if the user can manage *anything* here.
   const showManagement = canUpload && pageItems.some(canEdit);
 
-  // Paging must carry the active room filter, or turning the page silently
-  // drops it and shows a different result set than the one being paged.
   const pageHref = (n: number) => {
     const qs = new URLSearchParams({ page: String(n) });
     if (selectedRoom) qs.set("room", selectedRoom);
@@ -140,11 +122,16 @@ export default async function DashboardPage({
           </Button>
         ) : null}
         {canUpload ? (
-          <UploadDocumentDialog
-            rooms={writableRooms}
-            categoryOptions={categoryOptions}
-            canFileUnfiled={managesEverything}
-          />
+          <>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/documents/new-page">New page</Link>
+            </Button>
+            <UploadDocumentDialog
+              rooms={writableRooms}
+              categoryOptions={categoryOptions}
+              canFileUnfiled={managesEverything}
+            />
+          </>
         ) : null}
       </AppHeader>
 
@@ -179,7 +166,7 @@ export default async function DashboardPage({
               {selectedRoom
                 ? "No documents in this room yet."
                 : canUpload
-                  ? "No documents yet. Use “Upload document” to add the first one."
+                  ? "No documents yet. Use \u201cUpload document\u201d to add the first one."
                   : "No documents are available to your role yet."}
             </CardContent>
           </Card>
@@ -208,12 +195,21 @@ export default async function DashboardPage({
                       className="border-b border-border/60 last:border-0 hover:bg-muted/40"
                     >
                       <td className="px-4 py-3 align-top">
-                        <a
-                          href={`/api/documents/${doc.id}/download`}
-                          className="font-medium hover:underline"
-                        >
-                          {doc.title}
-                        </a>
+                        {documentKind(doc) === "page" ? (
+                          <a
+                            href={`/documents/${doc.id}/edit-content`}
+                            className="font-medium hover:underline"
+                          >
+                            {doc.title}
+                          </a>
+                        ) : (
+                          <a
+                            href={`/api/documents/${doc.id}/download`}
+                            className="font-medium hover:underline"
+                          >
+                            {doc.title}
+                          </a>
+                        )}
                         {doc.description ? (
                           <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
                             {doc.description}
@@ -222,9 +218,6 @@ export default async function DashboardPage({
                       </td>
                       <td className="px-4 py-3 align-top whitespace-nowrap text-muted-foreground">
                         {doc.roomId ? (
-                          // Unknown id means the room was deleted out from
-                          // under the document; show the raw state rather than
-                          // an empty cell that reads as "unfiled".
                           (roomName.get(doc.roomId) ?? "Unknown room")
                         ) : (
                           <span className="text-muted-foreground/60">—</span>
