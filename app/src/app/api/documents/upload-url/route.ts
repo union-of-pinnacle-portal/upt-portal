@@ -1,24 +1,30 @@
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/session";
-import { canManageDocuments } from "@/lib/roles";
+import { roleCanWrite } from "@/lib/rooms";
 import { getUploadUrl } from "@/lib/aws/s3";
 import { buildStorageKey } from "@/lib/documents";
 
 /**
  * POST /api/documents/upload-url
  *
- * Step 1 of the admin upload flow. Only committee heads may call it. Mints a
- * new document id and a short-lived presigned URL the browser PUTs the file
- * to directly, so large uploads never pass through the app server. The
- * document metadata is not written until step 2 (POST /api/documents).
+ * Step 1 of the upload flow. Mints a new document id and a short-lived
+ * presigned URL the browser PUTs the file to directly, so large uploads never
+ * pass through the app server. The document metadata is not written until
+ * step 2 (POST /api/documents).
+ *
+ * This is gated on the role being *capable* of writing at all, not on any
+ * particular room — the target room isn't chosen until step 2, which is where
+ * room membership is enforced. An orphaned S3 object is the worst a caller can
+ * achieve here: without a matching step-2 write, no document ever references
+ * it and it is invisible to the portal.
  */
 export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
-  if (!canManageDocuments(user.role)) {
+  if (!roleCanWrite(user.role)) {
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
 

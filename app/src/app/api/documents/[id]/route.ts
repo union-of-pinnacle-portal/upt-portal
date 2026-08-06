@@ -1,18 +1,24 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/session";
-import { canManageDocuments } from "@/lib/roles";
+import { isRank, RANKS } from "@/lib/roles";
+import { canWriteInRoom } from "@/lib/rooms";
 import {
   getDocument,
   updateDocument,
   type UpdateDocumentInput,
 } from "@/lib/documents";
+import { resolveCategories } from "@/lib/category-store";
 
 /**
  * PATCH /api/documents/:id
  *
- * Admin metadata management: edit title/description/category, change the
- * allowed rank, and move between draft/published/archived (publish, unpublish,
- * archive). Committee heads only. Only the provided fields change.
+ * Metadata management: edit title/description/category, change the allowed
+ * rank, and move between draft/published/archived (publish, unpublish,
+ * archive). Only the provided fields change.
+ *
+ * Authorization is scoped to the document's own Committee Room — the caller
+ * must be able to write *that* room, not merely hold a senior role. The room
+ * itself is not editable here (see UpdateDocumentInput).
  */
 export async function PATCH(
   req: Request,
@@ -22,10 +28,6 @@ export async function PATCH(
   if (!user) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
-  if (!canManageDocuments(user.role)) {
-    return NextResponse.json({ error: "Forbidden." }, { status: 403 });
-  }
-
   let body: Record<string, unknown>;
   try {
     body = await req.json();
@@ -41,18 +43,15 @@ export async function PATCH(
     if (!title) errors.push("title cannot be empty.");
     else patch.title = title;
   }
-  if (body.category !== undefined) {
-    const category = String(body.category).trim();
-    if (!category) errors.push("category cannot be empty.");
-    else patch.category = category;
-  }
+  // `categories` is deliberately NOT resolved here: resolving can create new
+  // categories, so it has to wait until after the room write check below.
   if (body.description !== undefined) {
     patch.description =
       typeof body.description === "string" ? body.description.trim() : "";
   }
   if (body.minRank !== undefined) {
-    if (body.minRank !== 1 && body.minRank !== 2 && body.minRank !== 3) {
-      errors.push("minRank must be 1, 2, or 3.");
+    if (!isRank(body.minRank)) {
+      errors.push(`minRank must be one of ${RANKS.join(", ")}.`);
     } else {
       patch.minRank = body.minRank;
     }
@@ -72,7 +71,7 @@ export async function PATCH(
   if (errors.length > 0) {
     return NextResponse.json({ error: errors.join(" ") }, { status: 400 });
   }
-  if (Object.keys(patch).length === 0) {
+  if (body.categories === undefined && Object.keys(patch).length === 0) {
     return NextResponse.json(
       { error: "No editable fields provided." },
       { status: 400 },
@@ -83,6 +82,19 @@ export async function PATCH(
   const existing = await getDocument(id);
   if (!existing) {
     return NextResponse.json({ error: "Not found." }, { status: 404 });
+  }
+
+  // Room-scoped write check, against the room the document actually lives in.
+  if (!(await canWriteInRoom(user, existing.roomId))) {
+    return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+  }
+
+  if (body.categories !== undefined) {
+    const resolved = await resolveCategories(body.categories, user.email);
+    if (!resolved.ok) {
+      return NextResponse.json({ error: resolved.error }, { status: 400 });
+    }
+    patch.categories = resolved.categories;
   }
 
   const updated = await updateDocument(id, patch);

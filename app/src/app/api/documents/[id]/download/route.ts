@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/session";
 import { getDocument } from "@/lib/documents";
 import { getDownloadUrl } from "@/lib/aws/s3";
-import { canManageDocuments, canViewRank } from "@/lib/roles";
+import { canViewRank } from "@/lib/roles";
+import { canWriteInRoom } from "@/lib/rooms";
 
 /**
  * GET /api/documents/:id/download
@@ -27,18 +28,23 @@ export async function GET(
   const { id } = await params;
   const doc = await getDocument(id);
 
-  // Admins (committee heads) may download any document — including drafts and
-  // archived ones they are managing. Everyone else only sees published
-  // documents, and unpublished/archived/missing ones all return an identical
-  // 404 so their existence can't be probed.
-  const isAdmin = canManageDocuments(user.role);
-  const viewable = doc && (isAdmin || doc.status === "published");
-  if (!viewable) {
+  if (!doc) {
+    return NextResponse.json({ error: "Not found." }, { status: 404 });
+  }
+
+  // Whoever may write a document's room may also download it in any state,
+  // including the drafts and archived items they are managing. Everyone else
+  // sees published documents only, and unpublished/archived/missing ones all
+  // return an identical 404 so their existence can't be probed.
+  const canManage = await canWriteInRoom(user, doc.roomId);
+  if (!canManage && doc.status !== "published") {
     return NextResponse.json({ error: "Not found." }, { status: 404 });
   }
 
   // Core RBAC check: the member's rank must clear the document's minRank.
-  // (Admins are rank 3, so this never blocks them.)
+  // This is deliberately NOT waived for room managers — rooms scope writes,
+  // never reads, so a rank-2 Committee Member managing a room still cannot
+  // read a document restricted to rank 3 or above within it.
   if (!canViewRank(user.role, doc.minRank)) {
     return NextResponse.json({ error: "Not found." }, { status: 404 });
   }

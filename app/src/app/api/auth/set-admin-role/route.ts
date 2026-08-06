@@ -11,8 +11,8 @@ supertokens.init(getBackendConfig());
  * Two modes:
  *
  * 1. Bootstrap mode (secret provided):
- *    If secret matches ADMIN_BOOTSTRAP_SECRET, sets role to "super_user"
- *    and marks setupComplete. Returns { roleAssigned: "super_user" } on
+ *    If secret matches ADMIN_BOOTSTRAP_SECRET, sets role to "committee_head"
+ *    and marks setupComplete. Returns { roleAssigned: "committee_head" } on
  *    success so the UI can show a confirmation message.
  *
  * 2. Setup-only mode (markSetupOnly: true):
@@ -46,11 +46,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ status: "ok" });
   }
 
-  // Correct code — promote to super_user and mark setup complete
+  // Correct code — promote to committee_head and mark setup complete
   await UserMetadata.updateUserMetadata(userId, {
-    role: "super_user",
+    role: "committee_head",
     setupComplete: true,
   });
 
-  return NextResponse.json({ status: "ok", roleAssigned: "super_user" });
+  return NextResponse.json({ status: "ok", roleAssigned: "committee_head" });
 }

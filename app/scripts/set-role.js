@@ -1,7 +1,10 @@
 /**
  * Dev-only helper: set a user's portal role by email.
  *
- *   npm run set-role -- <email> <general|contributor|committee_head>
+ *   npm run set-role -- <email> <general|contributor|committee_chair|committee_head>
+ *
+ * Role strings are the stored ids, not display names — `contributor` is shown
+ * as "Committee Member" and `committee_head` as "Super User" (see lib/roles.ts).
  *
  * Looks the user up in SuperTokens and writes `role` into their UserMetadata,
  * which is the source of truth the app derives rank from. This exists so you
@@ -19,7 +22,12 @@ const ThirdParty = require("supertokens-node/recipe/thirdparty").default;
 const Session = require("supertokens-node/recipe/session").default;
 const UserMetadata = require("supertokens-node/recipe/usermetadata").default;
 
-const VALID_ROLES = ["general", "contributor", "committee_head"];
+const VALID_ROLES = [
+  "general",
+  "contributor",
+  "committee_chair",
+  "committee_head",
+];
 
 async function main() {
   const [email, role] = process.argv.slice(2);
