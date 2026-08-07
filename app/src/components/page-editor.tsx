@@ -19,6 +19,7 @@ import {
   FORMAT_ELEMENT_COMMAND,
   type EditorState,
   type LexicalEditor,
+  type TextFormatType,
 } from "lexical";
 import {
   $createHeadingNode,
@@ -34,7 +35,7 @@ function ToolbarPlugin({ readOnly }: { readOnly: boolean }) {
 
   if (readOnly) return null;
 
-  const format = (fmt: Parameters<typeof FORMAT_TEXT_COMMAND>[1]) =>
+  const format = (fmt: TextFormatType) =>
     editor.dispatchCommand(FORMAT_TEXT_COMMAND, fmt);
 
   const setBlock = (type: "h1" | "h2" | "h3" | "paragraph" | "quote") => {
@@ -87,7 +88,7 @@ function ToolbarPlugin({ readOnly }: { readOnly: boolean }) {
         onClick={() => setBlock("quote")}
         className="text-xs"
       >
-        " "
+        &quot; &quot;
       </Button>
       <div className="mx-1 h-6 w-px self-center bg-border" />
       <Button
