@@ -5,13 +5,14 @@ import {
   canCreateRooms,
   listRoomMembers,
   listRooms,
+  listRoomsForUser,
   listWritableRooms,
   writesEverywhere,
 } from "@/lib/rooms";
 import { listVisibleForUser } from "@/lib/documents";
 import { AppHeader } from "@/components/app-header";
+import { PageBreadcrumb } from "@/components/page-breadcrumb";
 import { CreateRoomDialog } from "@/components/create-room-form";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 export const dynamic = "force-dynamic";
@@ -34,6 +35,7 @@ export default async function RoomsPage() {
   let rooms: Awaited<ReturnType<typeof listRooms>> = [];
   let docCount = new Map<string, number>();
   let memberCount = new Map<string, number>();
+  let myRoomIds = new Set<string>();
   let loadError = false;
   try {
     rooms = seesAllRooms ? await listRooms() : await listWritableRooms(user);
@@ -58,6 +60,14 @@ export default async function RoomsPage() {
     memberCount = new Map(
       rooms.map((room, i) => [room.id, rosters[i].length]),
     );
+
+    // Which of these the viewer actually belongs to. Only meaningful for Super
+    // Users, who see every room — for everyone else the list IS their rooms.
+    if (seesAllRooms) {
+      myRoomIds = new Set(
+        (await listRoomsForUser(user.email)).map((m) => m.roomId),
+      );
+    }
   } catch {
     loadError = true;
   }
@@ -68,13 +78,12 @@ export default async function RoomsPage() {
   return (
     <div className="min-h-svh bg-muted/30">
       <AppHeader>
-        <Button asChild variant="outline" size="sm">
-          <Link href="/dashboard">Documents</Link>
-        </Button>
         {canCreateRooms(user.role) ? <CreateRoomDialog /> : null}
       </AppHeader>
 
-      <main className="mx-auto w-full max-w-6xl px-6 py-8">
+      <main className="mx-auto w-full max-w-[100rem] px-6 py-8 lg:px-10">
+        <PageBreadcrumb trail={[{ label: "Committee rooms" }]} />
+
         <div className="mb-6">
           <h1 className="text-2xl font-semibold tracking-tight">
             Committee rooms
@@ -100,20 +109,32 @@ export default async function RoomsPage() {
             </CardContent>
           </Card>
         ) : (
-          <ul className="grid gap-3">
+          // Cards in a responsive grid rather than a single column: a room
+          // card is a short block, and stretching one across a wide page
+          // leaves most of the row empty.
+          <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {rooms.map((room) => (
               <li key={room.id}>
                 <Link
                   href={`/rooms/${room.id}`}
-                  className="block rounded-lg border border-border bg-background px-4 py-4 hover:bg-muted/40"
+                  className="flex h-full flex-col rounded-lg border border-border bg-background px-4 py-4 hover:bg-muted/40"
                 >
-                  <p className="font-medium">{room.name}</p>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-medium">{room.name}</p>
+                    {myRoomIds.has(room.id) ? (
+                      // Membership is what grants write access, so it is worth
+                      // showing on a list where a Super User sees every room.
+                      <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-xs font-medium">
+                        Member
+                      </span>
+                    ) : null}
+                  </div>
                   {room.description ? (
                     <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">
                       {room.description}
                     </p>
                   ) : null}
-                  <p className="mt-2 text-xs text-muted-foreground">
+                  <p className="mt-auto pt-3 text-xs text-muted-foreground">
                     {plural(docCount.get(room.id) ?? 0, "document")} ·{" "}
                     {plural(memberCount.get(room.id) ?? 0, "member")}
                   </p>

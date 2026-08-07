@@ -33,7 +33,7 @@ export default async function NewDocumentPage() {
   return (
     <div className="min-h-svh bg-muted/30">
       <AppHeader />
-      <main className="mx-auto w-full max-w-2xl px-6 py-8">
+      <main className="mx-auto w-full max-w-3xl px-6 py-8">
         <div className="mb-6">
           <Link
             href="/dashboard"

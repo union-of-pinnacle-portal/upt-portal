@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/session";
-import { getDocument } from "@/lib/documents";
-import { getDownloadUrl } from "@/lib/aws/s3";
+import { getDocument, getVersion } from "@/lib/documents";
+import { getDownloadUrl, getObjectBytes } from "@/lib/aws/s3";
 import { canViewRank } from "@/lib/roles";
 import { canWriteInRoom } from "@/lib/rooms";
 
@@ -17,7 +17,7 @@ import { canWriteInRoom } from "@/lib/rooms";
  * private bucket is never exposed directly.
  */
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const user = await getCurrentUser();
@@ -49,6 +49,39 @@ export async function GET(
     return NextResponse.json({ error: "Not found." }, { status: 404 });
   }
 
-  const url = await getDownloadUrl(doc.storageKey);
-  return NextResponse.redirect(url);
+  // `?inline=1` streams the bytes through this server instead of redirecting.
+  // The docx converter must read the file from JavaScript, and a same-origin
+  // read cannot be tripped up by bucket CORS or by redirect following.
+  const url = new URL(req.url);
+  if (url.searchParams.get("inline") === "1") {
+    const bytes = await getObjectBytes(doc.storageKey);
+    if (!bytes) {
+      return NextResponse.json({ error: "Not found." }, { status: 404 });
+    }
+    return new NextResponse(Buffer.from(bytes), {
+      headers: {
+        "Content-Type": doc.contentType || "application/octet-stream",
+        "Content-Length": String(bytes.byteLength),
+      },
+    });
+  }
+
+  // `?version=n` serves an older revision, resolved AFTER the checks above —
+  // all of which are properties of the document rather than of any one file —
+  // so an old version is never reachable by someone who could not reach the
+  // current one.
+  const requested = url.searchParams.get("version");
+  if (requested !== null) {
+    const version = Number.parseInt(requested, 10);
+    if (!Number.isInteger(version) || version < 1) {
+      return NextResponse.json({ error: "Bad version." }, { status: 400 });
+    }
+    const found = await getVersion(doc, version);
+    if (!found) {
+      return NextResponse.json({ error: "Not found." }, { status: 404 });
+    }
+    return NextResponse.redirect(await getDownloadUrl(found.storageKey));
+  }
+
+  return NextResponse.redirect(await getDownloadUrl(doc.storageKey));
 }

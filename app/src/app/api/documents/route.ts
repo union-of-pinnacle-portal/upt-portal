@@ -4,10 +4,9 @@ import { isRank, RANKS } from "@/lib/roles";
 import { canWriteInRoom, getRoom, writesEverywhere } from "@/lib/rooms";
 import {
   buildStorageKey,
-  buildContentKey,
   createDocument,
-  type DocumentKind,
 } from "@/lib/documents";
+import { buildContentKey, type DocumentKind } from "@/lib/document-formats";
 import { resolveCategories } from "@/lib/category-store";
 import type { Rank } from "@/lib/roles";
 

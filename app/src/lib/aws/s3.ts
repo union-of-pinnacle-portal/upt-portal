@@ -2,6 +2,7 @@ import {
   S3Client,
   GetObjectCommand,
   PutObjectCommand,
+  NoSuchKey,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { AWS_REGION, DOCUMENTS_BUCKET } from "./config";
@@ -60,4 +61,73 @@ export function getUploadUrl(
     }),
     { expiresIn },
   );
+}
+
+/**
+ * Write a small object straight from the server.
+ *
+ * Uploaded files never take this path — they go browser-to-S3 via a presigned
+ * URL so the bytes skip the app server. This is for portal-authored document
+ * content, which is a few KB of JSON the server already has in hand; a
+ * presigned round trip would be three requests to save what fits in one.
+ */
+export async function putObjectText(
+  storageKey: string,
+  body: string,
+  contentType = "application/json",
+): Promise<number> {
+  await s3.send(
+    new PutObjectCommand({
+      Bucket: DOCUMENTS_BUCKET,
+      Key: storageKey,
+      Body: body,
+      ContentType: contentType,
+    }),
+  );
+  return Buffer.byteLength(body, "utf8");
+}
+
+/**
+ * Read an object's raw bytes, or null if it does not exist.
+ *
+ * Only the docx→editor conversion uses this. Downloads deliberately redirect
+ * the browser to S3 so file bytes never pass through the app server; but the
+ * converter has to read the file from JavaScript, and routing that one read
+ * through our own origin removes any dependence on bucket CORS and on
+ * cross-origin redirect following. Word documents are small, so the cost is
+ * negligible and confined to this one path.
+ */
+export async function getObjectBytes(
+  storageKey: string,
+): Promise<Uint8Array | null> {
+  try {
+    const res = await s3.send(
+      new GetObjectCommand({ Bucket: DOCUMENTS_BUCKET, Key: storageKey }),
+    );
+    return (await res.Body?.transformToByteArray()) ?? null;
+  } catch (err) {
+    if (err instanceof NoSuchKey) return null;
+    throw err;
+  }
+}
+
+/**
+ * Read a small object as text, or null if it does not exist.
+ *
+ * A missing object is not an error here: a document row can outlive its
+ * content object (a half-finished create, a bucket restored from an older
+ * snapshot), and an editor that opens blank is far better than one that 500s.
+ */
+export async function getObjectText(
+  storageKey: string,
+): Promise<string | null> {
+  try {
+    const res = await s3.send(
+      new GetObjectCommand({ Bucket: DOCUMENTS_BUCKET, Key: storageKey }),
+    );
+    return (await res.Body?.transformToString()) ?? null;
+  } catch (err) {
+    if (err instanceof NoSuchKey) return null;
+    throw err;
+  }
 }

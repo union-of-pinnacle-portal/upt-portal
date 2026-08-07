@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/session";
 import { canViewRank } from "@/lib/roles";
 import { canWriteInRoom } from "@/lib/rooms";
-import { getDocument, documentKind, buildContentKey } from "@/lib/documents";
+import { getDocument } from "@/lib/documents";
+import { documentKind, buildContentKey } from "@/lib/document-formats";
 import { s3 } from "@/lib/aws/s3";
 import { DOCUMENTS_BUCKET } from "@/lib/aws/config";
 import {

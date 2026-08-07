@@ -135,3 +135,51 @@
     @apply font-heading;
   }
 }
+/* ---------------------------------------------------------------------- *
+ * Printing / "Download as PDF"
+ *
+ * Portal-authored documents are exported by printing them: the browser's own
+ * engine renders the same styles already on screen, so the PDF matches what
+ * the author sees and there is no second rendering path to keep in step. The
+ * alternative — mapping every editor node to a PDF library's primitives —
+ * would drift the moment the editor gains a feature.
+ *
+ * Everything that is app chrome rather than document is dropped, and the
+ * editor's on-screen framing (border, min-height, width cap) is undone so the
+ * text flows across real pages.
+ * ---------------------------------------------------------------------- */
+@media print {
+  .print-hide {
+    display: none !important;
+  }
+
+  .print-document,
+  .print-document * {
+    max-width: none !important;
+  }
+
+  .print-document {
+    border: 0 !important;
+    background: transparent !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+  }
+
+  /* Keep headings with the text they introduce. */
+  h1,
+  h2,
+  h3 {
+    break-after: avoid-page;
+  }
+
+  p,
+  li {
+    orphans: 3;
+    widows: 3;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+}

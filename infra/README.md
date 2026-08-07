@@ -124,6 +124,8 @@ be rewritten to `4` — see `app/scripts/migrate-minrank-3-to-4.js`.
 | **Category**      | `CATEGORIES`      | `CAT#<key>`                 | `name` (display), `key` (lower-cased `name` — the case-insensitive identity), `createdBy`, `createdAt`. Created inline by anyone who may upload; seed with `npm run seed-categories`. |
 | **Membership**    | `USER#<email>`    | `ROOM#<id>`                 | `roomId`, `email`, `assignedBy`, `assignedAt` |
 | **Membership** (mirror) | `ROOM#<id>` | `MEMBER#<email>`            | same attributes — see note below |
+| **Edit lock**     | `DOC#<id>`        | `LOCK`                      | `heldBy` (email), `expiresAt` (epoch seconds, TTL). Advisory only — see below. |
+| **File version**  | `DOC#<id>`        | `VER#<zero-padded number>`  | `documentId`, `version`, `storageKey`, `originalFilename`, `contentType`, `sizeBytes`, `uploadedBy`, `uploadedAt`. Written only when a file is replaced — see below. |
 | **MagicLink**     | `TOKEN#<token>`   | `TOKEN#<token>`             | `email`, `used`, `expiresAt` (epoch seconds, TTL) |
 | **Session**       | `SESSION#<id>`    | `SESSION#<id>`              | `email`, `expiresAt` (epoch seconds, TTL) |
 | **Download log**  | `DOC#<id>`        | `LOG#<timestamp>#<email>`   | `email` |
@@ -150,6 +152,47 @@ Two storage details worth knowing before changing this:
   needed — per-user for the authorization check on every write, per-room for the
   roster UI — and the transaction is what keeps them from disagreeing. Any code
   that writes a membership must write both, or the two views drift.
+
+### Document kinds
+
+A Document is one of two kinds, carried in its `kind` attribute:
+
+- **`file`** — an uploaded file (Word, PDF, …). Read by downloading it.
+- **`page`** — written in the portal with the built-in editor, either created
+  there or converted from an uploaded `.docx`.
+
+Everything else — rank visibility, Committee Room, categories, status, version
+history — is identical for both. **A missing `kind` means `file`**, so existing
+documents need no migration.
+
+A page's body is **stored in S3, not DynamoDB**, at the document's `storageKey`.
+The reason is the document list: `listVisibleForUser` returns whole items, so a
+body on the Document item would make every dashboard load fetch the full text of
+every document the viewer can see. S3 also sidesteps the 400 KB item limit.
+
+### Edit locks
+
+Editing a page takes an **advisory** lease (`sk = LOCK`) with an `expiresAt` the
+table's existing TTL reaps. It stops two people unknowingly typing into the same
+document — **it is not authorization**, and saves are deliberately not refused
+when a lease lapses, because discarding real work to uphold a hint is the wrong
+trade. Permission remains `canWriteInRoom`.
+
+TTL deletion is not prompt, so reads compare `expiresAt` themselves and treat a
+stale row as absent — TTL is the janitor, not the clock.
+
+### File versions
+
+A document's file can be replaced and nothing is ever overwritten: each
+replacement is its own S3 object under `documents/<id>/v<n>/<name>`, and the
+Document item is repointed at it. Saving a page document is the same mechanism,
+so edit history and file history are one feature.
+
+**Version 1 has no stored item.** A document never replaced is its own version
+1, synthesized from the Document item. It is written for real the first time the
+file is replaced — otherwise repointing would lose the only record of where the
+original bytes live. Version items therefore start at 2, and numbers are
+zero-padded because DynamoDB sorts sort keys lexicographically.
 
 ## S3 bucket (`upt-portal-documents`)
 
