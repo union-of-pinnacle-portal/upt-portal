@@ -97,7 +97,7 @@ export function NewPageDocumentForm({
     }
 
     // Go straight to the editor
-    router.push(`/documents/${data.id}/edit-content`);
+    router.push(`/documents/${data.id}`);
   }
 
   return (
@@ -129,11 +129,8 @@ export function NewPageDocumentForm({
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="categories">Categories</Label>
         <CategoryPicker
           options={categoryOptions}
-          
-          
         />
       </div>
 
