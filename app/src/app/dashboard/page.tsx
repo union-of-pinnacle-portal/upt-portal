@@ -108,11 +108,16 @@ export default async function DashboardPage() {
           </Button>
         ) : null}
         {canUpload ? (
-          <UploadDocumentDialog
-            rooms={writableRooms}
-            categoryOptions={categoryOptions}
-            canFileUnfiled={managesEverything}
-          />
+          <>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/documents/new-page">New page</Link>
+            </Button>
+            <UploadDocumentDialog
+              rooms={writableRooms}
+              categoryOptions={categoryOptions}
+              canFileUnfiled={managesEverything}
+            />
+          </>
         ) : null}
       </AppHeader>
 
