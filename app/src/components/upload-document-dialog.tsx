@@ -11,13 +11,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { DocumentUploadForm } from "@/components/document-upload-form";
+import { NewPageDocumentForm } from "@/components/new-page-document-form";
 
-/**
- * Header "Upload document" action: opens the upload form in a modal so admins
- * stay on the dashboard (and keep their pagination position). On success it
- * closes and refreshes the table in place. The standalone /documents/new page
- * remains as a deep-link fallback.
- */
 export function UploadDocumentDialog({
   rooms = [],
   categoryOptions = [],
@@ -28,27 +23,66 @@ export function UploadDocumentDialog({
   canFileUnfiled?: boolean;
 } = {}) {
   const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState<"upload" | "page">("upload");
   const router = useRouter();
+
+  function handleSuccess() {
+    setOpen(false);
+    router.refresh();
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">Upload document</Button>
+        <Button size="sm">Add document</Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Upload a document</DialogTitle>
+          <DialogTitle>Add document</DialogTitle>
         </DialogHeader>
-        <DocumentUploadForm
-          rooms={rooms}
-          categoryOptions={categoryOptions}
-          canFileUnfiled={canFileUnfiled}
-          onSuccess={() => {
-            setOpen(false);
-            router.refresh();
-          }}
-          onCancel={() => setOpen(false)}
-        />
+
+        <div className="flex gap-2 border-b border-border pb-3">
+          <button
+            type="button"
+            onClick={() => setTab("upload")}
+            className={`text-sm font-medium px-3 py-1.5 rounded-md transition-colors ${
+              tab === "upload"
+                ? "bg-muted text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Upload file
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab("page")}
+            className={`text-sm font-medium px-3 py-1.5 rounded-md transition-colors ${
+              tab === "page"
+                ? "bg-muted text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Create page
+          </button>
+        </div>
+
+        {tab === "upload" ? (
+          <DocumentUploadForm
+            rooms={rooms}
+            categoryOptions={categoryOptions}
+            canFileUnfiled={canFileUnfiled}
+            onSuccess={handleSuccess}
+            onCancel={() => setOpen(false)}
+          />
+        ) : (
+          <NewPageDocumentForm
+            rooms={rooms}
+            categoryOptions={categoryOptions}
+            canFileUnfiled={canFileUnfiled}
+            onSuccess={handleSuccess}
+            onCancel={() => setOpen(false)}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );
