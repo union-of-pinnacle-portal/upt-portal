@@ -46,12 +46,13 @@ export function NewPageDocumentForm({
   );
   const [minRank, setMinRank] = useState<number>(1);
   const [status, setStatus] = useState<"draft" | "published">("draft");
-  const [categories, setCategories] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const categories = formData.getAll("categories").map(String);
     setError(null);
 
     if (!title.trim()) {
@@ -131,8 +132,8 @@ export function NewPageDocumentForm({
         <Label htmlFor="categories">Categories</Label>
         <CategoryPicker
           options={categoryOptions}
-          value={categories}
-          onChange={setCategories}
+          
+          
         />
       </div>
 
