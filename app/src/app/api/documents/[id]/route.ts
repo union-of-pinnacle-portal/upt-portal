@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/session";
 import { isRank, RANKS } from "@/lib/roles";
-import { canWriteInRoom } from "@/lib/rooms";
+import { canWriteInRoom, writesEverywhere } from "@/lib/rooms";
 import {
+  deleteDocument,
   getDocument,
   updateDocument,
   type UpdateDocumentInput,
@@ -103,4 +104,41 @@ export async function PATCH(
   }
 
   return NextResponse.json({ id: updated.id, status: updated.status });
+}
+
+/**
+ * DELETE /api/documents/:id
+ *
+ * Permanently remove a document and its whole history.
+ *
+ * SUPER USERS ONLY — deliberately stricter than editing. A Chair may manage
+ * their room's documents, but destroying a committee's records outright is a
+ * larger blast radius than that role needs; archiving is the reversible action
+ * available to everyone who can write, and is the right tool for anything that
+ * is a real record. Hard delete exists for junk: test uploads, wrong file,
+ * duplicates.
+ *
+ * The file bytes survive in S3 — the app has no delete permission on the
+ * bucket (see lib/documents.ts `deleteDocument`).
+ */
+export async function DELETE(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+  }
+  if (!writesEverywhere(user.role)) {
+    return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+  }
+
+  const { id } = await params;
+  const existing = await getDocument(id);
+  if (!existing) {
+    return NextResponse.json({ error: "Not found." }, { status: 404 });
+  }
+
+  const removed = await deleteDocument(id);
+  return NextResponse.json({ id, removedItems: removed });
 }

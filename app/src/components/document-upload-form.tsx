@@ -5,10 +5,25 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 import { MIN_RANK_OPTIONS } from "@/lib/roles";
 import { CategoryPicker } from "@/components/category-picker";
 
 // Shared styling for the native <select>/<textarea>, matching the Input component.
+/**
+ * Sentinel for "no room". Radix reserves the empty string for a Select's
+ * cleared state, so unfiled cannot be "" here; the submit handler maps it back
+ * to undefined before the request goes out.
+ */
+const UNFILED_ROOM = "unfiled";
+
 const FIELD =
   "border-input bg-background flex w-full min-w-0 rounded-lg border px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
@@ -98,7 +113,10 @@ export function DocumentUploadForm({
           title: data.get("title"),
           description: data.get("description"),
           categories,
-          roomId: data.get("roomId") || undefined,
+          roomId:
+            data.get("roomId") === UNFILED_ROOM
+              ? undefined
+              : data.get("roomId") || undefined,
           minRank: Number(data.get("minRank")),
           status: data.get("status"),
           originalFilename: file.name,
@@ -150,45 +168,59 @@ export function DocumentUploadForm({
 
       <div className="grid gap-2">
         <Label htmlFor="roomId">Committee room</Label>
-        <select
-          id="roomId"
+        <Select
           name="roomId"
-          className={FIELD}
           required={!canFileUnfiled}
-          defaultValue={canFileUnfiled ? "" : (rooms[0]?.id ?? "")}
+          defaultValue={canFileUnfiled ? UNFILED_ROOM : (rooms[0]?.id ?? "")}
         >
-          {/* Only Super Users get the unfiled option; for everyone else the
-              room is what authorizes the upload, so it cannot be blank. */}
-          {canFileUnfiled ? <option value="">No room (unfiled)</option> : null}
-          {rooms.map((room) => (
-            <option key={room.id} value={room.id}>
-              {room.name}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger id="roomId" className="w-full">
+            <SelectValue placeholder="Choose a room" />
+          </SelectTrigger>
+          <SelectContent>
+            {/* Only Super Users get the unfiled option; for everyone else the
+                room is what authorizes the upload, so it cannot be blank. */}
+            {canFileUnfiled ? (
+              <SelectItem value={UNFILED_ROOM}>No room (unfiled)</SelectItem>
+            ) : null}
+            {rooms.map((room) => (
+              <SelectItem key={room.id} value={room.id}>
+                {room.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <p className="text-xs text-muted-foreground">
-          Controls who can edit this document later. It does not affect who can
-          see it — that is “Who can view” below.
+        Controls who can edit this document. See “Who can view” below.
         </p>
       </div>
 
       <div className="grid gap-2">
         <Label htmlFor="minRank">Who can view</Label>
-        <select id="minRank" name="minRank" defaultValue="1" className={FIELD}>
-          {MIN_RANK_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+        <Select name="minRank" defaultValue="1">
+          <SelectTrigger id="minRank" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {MIN_RANK_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={String(opt.value)}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="grid gap-2">
         <Label htmlFor="status">Status</Label>
-        <select id="status" name="status" defaultValue="published" className={FIELD}>
-          <option value="published">Published</option>
-          <option value="draft">Draft (hidden from members)</option>
-        </select>
+        <Select name="status" defaultValue="published">
+          <SelectTrigger id="status" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="published">Published</SelectItem>
+            <SelectItem value="draft">Draft (hidden from members)</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}

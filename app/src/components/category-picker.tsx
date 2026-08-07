@@ -233,8 +233,7 @@ export function CategoryPicker({
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Pick at least one. Type a new name to create a category — it becomes
-        available to everyone, so check the list before adding.
+      Pick at least one. Type a new name to create a category. Check the list first to avoid duplicates.
       </p>
     </div>
   );

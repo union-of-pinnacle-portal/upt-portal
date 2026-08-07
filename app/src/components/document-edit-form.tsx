@@ -5,6 +5,14 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 import { MIN_RANK_OPTIONS, type Rank } from "@/lib/roles";
 import { CategoryPicker } from "@/components/category-picker";
 
@@ -114,32 +122,32 @@ export function DocumentEditForm({
 
       <div className="grid gap-2">
         <Label htmlFor="minRank">Who can view</Label>
-        <select
-          id="minRank"
-          name="minRank"
-          defaultValue={String(doc.minRank)}
-          className={FIELD}
-        >
-          {MIN_RANK_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+        <Select name="minRank" defaultValue={String(doc.minRank)}>
+          <SelectTrigger id="minRank" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {MIN_RANK_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={String(opt.value)}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="grid gap-2">
         <Label htmlFor="status">Status</Label>
-        <select
-          id="status"
-          name="status"
-          defaultValue={doc.status}
-          className={FIELD}
-        >
-          <option value="published">Published</option>
-          <option value="draft">Draft (hidden from members)</option>
-          <option value="archived">Archived (hidden from members)</option>
-        </select>
+        <Select name="status" defaultValue={doc.status}>
+          <SelectTrigger id="status" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="published">Published</SelectItem>
+            <SelectItem value="draft">Draft (hidden from members)</SelectItem>
+            <SelectItem value="archived">Archived (hidden from members)</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
