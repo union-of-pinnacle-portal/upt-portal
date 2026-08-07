@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import EmailVerification from "supertokens-web-js/recipe/emailverification";
 
 import { Button } from "@/components/ui/button";
+import { BrandLogo } from "@/components/brand-logo";
 import {
   Card,
   CardContent,
@@ -12,13 +13,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { BrandLogo } from "@/components/brand-logo";
 
 export default function VerifyEmailPage() {
   const router = useRouter();
   const [isResending, setIsResending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [verifying, setVerifying] = useState(false);
+  const [hasToken, setHasToken] = useState(false);
 
   useEffect(() => {
     async function handleVerification() {
@@ -26,24 +26,20 @@ export default function VerifyEmailPage() {
       const token = urlParams.get("token");
 
       if (token) {
-        setVerifying(true);
+        setHasToken(true);
         try {
           const response = await EmailVerification.verifyEmail();
           if (response.status === "OK") {
-            // Go to setup page for admin code prompt on first login
-            router.push("/auth/setup");
+            window.location.href = "/auth/login?verified=true";
             return;
-          } else {
-            setMessage("Verification failed. The link may have expired.");
           }
         } catch {
-          setMessage("Something went wrong. Please try resending.");
+          // fall through
         }
-        setVerifying(false);
+        setHasToken(false);
         return;
       }
 
-      // No token — check if already verified
       const verified = await EmailVerification.isEmailVerified();
       if (verified.isVerified) {
         router.push("/dashboard");
@@ -52,22 +48,20 @@ export default function VerifyEmailPage() {
     handleVerification();
   }, [router]);
 
-  async function handleResend() {
-    setIsResending(true);
-    setMessage(null);
-    const response = await EmailVerification.sendVerificationEmail();
-    setIsResending(false);
-    if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
-      router.push("/dashboard");
-    } else {
-      setMessage("Verification email resent. Check your inbox.");
-    }
-  }
-
-  if (verifying) {
+  if (hasToken) {
     return (
-      <div className="flex min-h-svh items-center justify-center">
-        <p className="text-sm text-muted-foreground">Verifying your email…</p>
+      <div
+        style={{
+          fontFamily: "sans-serif",
+          textAlign: "center",
+          padding: "60px 20px",
+          color: "#333",
+        }}
+      >
+        <p style={{ fontSize: "16px" }}>Verifying your email...</p>
+        <p style={{ fontSize: "14px", color: "#666", marginTop: "8px" }}>
+          You will be redirected to sign in shortly.
+        </p>
       </div>
     );
   }
@@ -85,13 +79,27 @@ export default function VerifyEmailPage() {
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <p className="text-sm text-muted-foreground">
-            Didn&apos;t receive it? Check your spam folder or resend below.
+            Did not receive it? Check your spam folder or resend below.
           </p>
           {message && (
             <p className="text-sm text-muted-foreground">{message}</p>
           )}
-          <Button variant="outline" onClick={handleResend} disabled={isResending}>
-            {isResending ? "Resending…" : "Resend verification email"}
+          <Button
+            variant="outline"
+            onClick={async () => {
+              setIsResending(true);
+              setMessage(null);
+              const response = await EmailVerification.sendVerificationEmail();
+              setIsResending(false);
+              if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
+                router.push("/dashboard");
+              } else {
+                setMessage("Verification email resent. Check your inbox.");
+              }
+            }}
+            disabled={isResending}
+          >
+            {isResending ? "Resending..." : "Resend verification email"}
           </Button>
         </CardContent>
       </Card>
