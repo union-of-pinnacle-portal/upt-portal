@@ -28,7 +28,6 @@ import {
  */
 export default function SetupPage() {
   const router = useRouter();
-  const [adminCode, setAdminCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [roleAssigned, setRoleAssigned] = useState<string | null>(null);
@@ -66,25 +65,6 @@ export default function SetupPage() {
     if (!userId) {
       router.push("/auth/login");
       return;
-    }
-
-    if (adminCode.trim()) {
-      const res = await fetch("/api/auth/set-admin-role", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, secret: adminCode }),
-      });
-      const data = await res.json();
-      if (data.roleAssigned === "committee_head") {
-        setRoleAssigned("committee_head");
-        // Must sign out so the new role is stamped into the session on next login
-        setTimeout(async () => {
-          await fetch("/api/auth/signout", { method: "POST" });
-          router.push("/auth/login?promoted=true");
-        }, 2000);
-        return;
-      }
-      // Wrong code — still proceed but as general
     }
 
     await markSetupComplete(userId);
@@ -134,22 +114,6 @@ export default function SetupPage() {
 
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="adminCode">
-                Admin access code{" "}
-                <span className="text-muted-foreground font-normal">
-                  (optional)
-                </span>
-              </Label>
-              <Input
-                id="adminCode"
-                type="password"
-                value={adminCode}
-                onChange={(e) => setAdminCode(e.target.value)}
-                placeholder="Leave blank to continue as general member"
-              />
-            </div>
-
             {error && <p className="text-sm text-destructive">{error}</p>}
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
