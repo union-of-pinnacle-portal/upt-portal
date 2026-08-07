@@ -21,20 +21,6 @@ export default function GoogleCallbackPage() {
         router.push("/auth/login?error=oauth_failed");
         return;
       }
-
-      // Check if this user has completed the setup flow
-      try {
-        const res = await fetch("/api/auth/check-setup");
-        const data = await res.json();
-        if (data.setupComplete) {
-          router.push("/dashboard");
-        } else {
-          router.push("/auth/setup");
-        }
-      } catch {
-        // Fallback to setup if check fails
-        router.push("/auth/setup");
-      }
     }
     handleCallback();
   }, [router]);
