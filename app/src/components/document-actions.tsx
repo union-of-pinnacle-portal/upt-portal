@@ -62,15 +62,9 @@ export function DocumentActions({
           <MoreVertical className="size-4" aria-hidden="true" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
-          {kind === "page" ? (
-            <DropdownMenuItem asChild>
-              <Link href={`/documents/${doc.id}`}>Edit document</Link>
-            </DropdownMenuItem>
-          ) : (
-            <DropdownMenuItem onSelect={() => setEditOpen(true)}>
-              Edit details
-            </DropdownMenuItem>
-          )}
+          <DropdownMenuItem onSelect={() => setEditOpen(true)}>
+            Edit details
+          </DropdownMenuItem>
 
           {showConvert ? (
             <DropdownMenuItem onSelect={() => setConvertOpen(true)}>
