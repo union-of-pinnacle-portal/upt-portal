@@ -77,7 +77,11 @@ export default function SetupPage() {
       const data = await res.json();
       if (data.roleAssigned === "committee_head") {
         setRoleAssigned("committee_head");
-        setTimeout(() => router.push("/dashboard"), 2000);
+        // Must sign out so the new role is stamped into the session on next login
+        setTimeout(async () => {
+          await fetch("/api/auth/signout", { method: "POST" });
+          router.push("/auth/login?promoted=true");
+        }, 2000);
         return;
       }
       // Wrong code — still proceed but as general
