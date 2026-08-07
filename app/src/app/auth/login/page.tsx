@@ -28,6 +28,7 @@ function LoginPageContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const searchParams = useSearchParams();
   const verified = searchParams.get("verified");
+  const promoted = searchParams.get("promoted");
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -99,6 +100,11 @@ function LoginPageContent() {
           {verified && (
             <p className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">
               Email verified — sign in below.
+            </p>
+          )}
+          {promoted && (
+            <p className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">
+              Admin role activated — sign in to continue.
             </p>
           )}
           <Button
