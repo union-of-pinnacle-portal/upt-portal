@@ -25,6 +25,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [adminCode, setAdminCode] = useState("");
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
@@ -57,6 +58,17 @@ export default function RegisterPage() {
       setError("Something went wrong. Please try again.");
       setIsSubmitting(false);
       return;
+    }
+
+    if (adminCode.trim()) {
+      await fetch("/api/auth/set-admin-role", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: response.user.id,
+          secret: adminCode,
+        }),
+      });
     }
 
     // Manually trigger verification email (required when using custom UI)
@@ -127,6 +139,20 @@ export default function RegisterPage() {
             </div>
 
             {error && <p className="text-sm text-destructive">{error}</p>}
+
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="adminCode">
+                Admin access code{" "}
+                <span className="font-normal text-muted-foreground">(optional)</span>
+              </Label>
+              <Input
+                id="adminCode"
+                type="password"
+                value={adminCode}
+                onChange={(e) => setAdminCode(e.target.value)}
+                placeholder="Leave blank if not an admin"
+              />
+            </div>
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? "Creating account…" : "Create account"}
