@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/session";
 import { isRank, RANKS } from "@/lib/roles";
 import { canWriteInRoom, getRoom, writesEverywhere } from "@/lib/rooms";
-import { buildStorageKey, createDocument } from "@/lib/documents";
+import { buildStorageKey, createDocument, buildContentKey } from "@/lib/documents";
 import { resolveCategories } from "@/lib/category-store";
 import type { Rank } from "@/lib/roles";
+import { putObjectText } from "@/lib/aws/s3";
 
 /**
  * POST /api/documents
@@ -52,7 +53,8 @@ export async function POST(req: Request) {
   if (status !== "draft" && status !== "published") {
     errors.push("status must be draft or published.");
   }
-  if (!Number.isFinite(sizeBytes) || sizeBytes < 0) {
+  const kind = body.kind === "page" ? "page" : "file";
+  if (kind === "file" && (!Number.isFinite(sizeBytes) || sizeBytes < 0)) {
     errors.push("sizeBytes must be a non-negative number.");
   }
 
@@ -83,6 +85,35 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: resolved.error }, { status: 400 });
   }
 
+  const storageKey =
+    kind === "page"
+      ? buildContentKey(id)
+      : buildStorageKey(id, originalFilename);
+
+  // For page documents, write empty content to S3 so the page loads cleanly
+  if (kind === "page") {
+    // Write a valid empty Lexical editor state so the page loads cleanly
+    await putObjectText(storageKey, JSON.stringify({
+      root: {
+        children: [
+          {
+            children: [],
+            direction: null,
+            format: "",
+            indent: 0,
+            type: "paragraph",
+            version: 1,
+          },
+        ],
+        direction: null,
+        format: "",
+        indent: 0,
+        type: "root",
+        version: 1,
+      },
+    }));
+  }
+
   const doc = await createDocument({
     id,
     title,
@@ -91,10 +122,11 @@ export async function POST(req: Request) {
     roomId,
     minRank: minRank as Rank,
     status: status as "draft" | "published",
-    storageKey: buildStorageKey(id, originalFilename),
-    originalFilename,
-    contentType,
-    sizeBytes,
+    kind,
+    storageKey,
+    originalFilename: kind === "page" ? `${id}.page` : originalFilename,
+    contentType: kind === "page" ? "application/json" : contentType,
+    sizeBytes: kind === "page" ? 0 : sizeBytes,
     uploadedBy: user.email,
   });
 
