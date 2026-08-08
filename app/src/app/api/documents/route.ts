@@ -92,7 +92,26 @@ export async function POST(req: Request) {
 
   // For page documents, write empty content to S3 so the page loads cleanly
   if (kind === "page") {
-    await putObjectText(storageKey, "");
+    // Write a valid empty Lexical editor state so the page loads cleanly
+    await putObjectText(storageKey, JSON.stringify({
+      root: {
+        children: [
+          {
+            children: [],
+            direction: null,
+            format: "",
+            indent: 0,
+            type: "paragraph",
+            version: 1,
+          },
+        ],
+        direction: null,
+        format: "",
+        indent: 0,
+        type: "root",
+        version: 1,
+      },
+    }));
   }
 
   const doc = await createDocument({
