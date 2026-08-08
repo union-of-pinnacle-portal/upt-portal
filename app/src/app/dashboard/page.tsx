@@ -23,6 +23,7 @@ import { AppHeader } from "@/components/app-header";
 import { UploadDocumentDialog } from "@/components/upload-document-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { rankForRole } from "@/lib/roles";
 
 // Documents come from DynamoDB per-request; never statically cache this page.
 export const dynamic = "force-dynamic";
@@ -66,7 +67,7 @@ export default async function DashboardPage() {
   // Super Users can always upload (they may leave a document unfiled, which is
   // also how the very first upload happens before any room exists). Everyone
   // else needs at least one room they belong to.
-  const canUpload = managesEverything || writableRooms.length > 0;
+  const canUpload = rankForRole(user.role) >= 3;
 
   // Edit is decided per document, not per user: a Chair may manage documents in
   // their own rooms while merely reading everything else on the same page.
@@ -105,6 +106,11 @@ export default async function DashboardPage() {
         {canCreateRooms(user.role) || writableRooms.length > 0 ? (
           <Button asChild variant="outline" size="sm">
             <Link href="/rooms">Committee rooms</Link>
+          </Button>
+        ) : null}
+        {user.rank >= 3 ? (
+          <Button asChild variant="outline" size="sm">
+            <Link href="/admin/users">Manage members</Link>
           </Button>
         ) : null}
         {canUpload ? (
