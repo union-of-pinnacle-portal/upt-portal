@@ -52,7 +52,7 @@ export async function GET() {
   const emailSet = new Set<string>([user.email]);
 
   for (const room of rooms) {
-    const members = await listRoomMembers(room.id);
+    const members = await listRoomMembers(room.roomId);
     for (const m of members) emailSet.add(m.email);
   }
 
