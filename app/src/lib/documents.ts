@@ -23,32 +23,6 @@ export { documentKind, type DocumentKind } from "@/lib/document-formats";
 export const PAGE_CONTENT_FILENAME = "content.json";
 
 /**
- * A serialized empty Lexical editor state — one blank paragraph.
- *
- * Written when a page document is created so its content object always exists
- * and always parses.
- */
-export const EMPTY_PAGE_CONTENT = JSON.stringify({
-  root: {
-    children: [
-      {
-        children: [],
-        direction: null,
-        format: "",
-        indent: 0,
-        type: "paragraph",
-        version: 1,
-      },
-    ],
-    direction: null,
-    format: "",
-    indent: 0,
-    type: "root",
-    version: 1,
-  },
-});
-
-/**
  * A document as stored under `pk = sk = DOC#<id>` (see infra data model).
  * `minRank` is the lowest rank allowed to view it and is the partition key of
  * the `by-rank` GSI that serves the role-based list.

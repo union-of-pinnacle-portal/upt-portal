@@ -11,9 +11,11 @@ import {
 } from "@/lib/rooms";
 import { listVisibleForUser } from "@/lib/documents";
 import { AppHeader } from "@/components/app-header";
+import { EmptyState } from "@/components/empty-state";
 import { PageBreadcrumb } from "@/components/page-breadcrumb";
 import { CreateRoomDialog } from "@/components/create-room-form";
 import { Card, CardContent } from "@/components/ui/card";
+import { TriangleAlert, Users } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -96,16 +98,31 @@ export default async function RoomsPage() {
 
         {loadError ? (
           <Card>
-            <CardContent className="py-10 text-center text-sm text-destructive">
-              Rooms are temporarily unavailable. Please try again shortly.
+            <CardContent className="p-0">
+              <EmptyState
+                icon={TriangleAlert}
+                tone="error"
+                title="Rooms are temporarily unavailable"
+                description="Something went wrong reaching the store. Please try again shortly."
+              />
             </CardContent>
           </Card>
         ) : rooms.length === 0 ? (
           <Card>
-            <CardContent className="py-12 text-center text-sm text-muted-foreground">
-              {canCreateRooms(user.role)
-                ? "No rooms yet. Use “New room” to create the first one."
-                : "You have not been added to any committee rooms yet."}
+            <CardContent className="p-0">
+              <EmptyState
+                icon={Users}
+                title={
+                  canCreateRooms(user.role)
+                    ? "No committee rooms yet"
+                    : "You are not in any committee rooms"
+                }
+                description={
+                  canCreateRooms(user.role)
+                    ? "Use “New room” to create the first one."
+                    : "A Chair or Super User can add you to one. You can still read every document your role allows."
+                }
+              />
             </CardContent>
           </Card>
         ) : (

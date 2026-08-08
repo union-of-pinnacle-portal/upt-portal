@@ -1,11 +1,11 @@
 import { notFound, redirect } from "next/navigation";
-import Link from "next/link";
 import { getCurrentUser } from "@/lib/session";
 import { canWriteInRoom } from "@/lib/rooms";
 import { getDocument } from "@/lib/documents";
 import { documentCategories } from "@/lib/categories";
 import { listCategoryNames } from "@/lib/category-store";
 import { AppHeader } from "@/components/app-header";
+import { BackButton } from "@/components/back-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DocumentEditForm } from "@/components/document-edit-form";
 
@@ -44,14 +44,10 @@ export default async function EditDocumentPage({
     <div className="min-h-svh bg-muted/30">
       <AppHeader />
       <main className="mx-auto w-full max-w-3xl px-6 py-8">
+        <BackButton href="/dashboard" label="Back to documents" />
+
         <div className="mb-6">
-          <Link
-            href="/dashboard"
-            className="text-sm text-muted-foreground hover:underline"
-          >
-            ← Back to documents
-          </Link>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight">
+          <h1 className="text-2xl font-semibold tracking-tight">
             Edit document
           </h1>
         </div>

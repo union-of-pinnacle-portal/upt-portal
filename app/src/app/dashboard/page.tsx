@@ -20,9 +20,11 @@ import {
   type CommitteeRoom,
 } from "@/lib/rooms";
 import { AppHeader } from "@/components/app-header";
+import { EmptyState } from "@/components/empty-state";
 import { UploadDocumentDialog } from "@/components/upload-document-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { FileText, TriangleAlert } from "lucide-react";
 import { rankForRole } from "@/lib/roles";
 
 // Documents come from DynamoDB per-request; never statically cache this page.
@@ -108,11 +110,6 @@ export default async function DashboardPage() {
             <Link href="/rooms">Committee rooms</Link>
           </Button>
         ) : null}
-        {user.rank >= 3 ? (
-          <Button asChild variant="outline" size="sm">
-            <Link href="/admin/users">Manage members</Link>
-          </Button>
-        ) : null}
         {canUpload ? (
           <UploadDocumentDialog
             rooms={writableRooms}
@@ -129,16 +126,27 @@ export default async function DashboardPage() {
 
         {loadError ? (
           <Card>
-            <CardContent className="py-10 text-center text-sm text-destructive">
-              Documents are temporarily unavailable. Please try again shortly.
+            <CardContent className="p-0">
+              <EmptyState
+                icon={TriangleAlert}
+                tone="error"
+                title="Documents are temporarily unavailable"
+                description="Something went wrong reaching the store. Please try again shortly."
+              />
             </CardContent>
           </Card>
         ) : rows.length === 0 ? (
           <Card>
-            <CardContent className="py-12 text-center text-sm text-muted-foreground">
-              {canUpload
-                ? "No documents yet. Use “Upload document” to add the first one."
-                : "No documents are available to your role yet."}
+            <CardContent className="p-0">
+              <EmptyState
+                icon={FileText}
+                title="No documents yet"
+                description={
+                  canUpload
+                    ? "Use “Upload document” to add the first one."
+                    : "Nothing has been shared with your role yet."
+                }
+              />
             </CardContent>
           </Card>
         ) : (

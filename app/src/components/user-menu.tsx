@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Session from "supertokens-web-js/recipe/session";
 import {
   DropdownMenu,
@@ -32,7 +33,16 @@ function initials(email: string): string {
  * reference information, not a control; showing it permanently spends prime
  * header space on something you check rarely.
  */
-export function UserMenu({ email, role }: { email: string; role: string }) {
+export function UserMenu({
+  email,
+  role,
+  canManageMembers,
+}: {
+  email: string;
+  role: string;
+  /** Chairs and Super Users — matches the /admin/users rank gate. */
+  canManageMembers: boolean;
+}) {
   const router = useRouter();
 
   async function signOut() {
@@ -54,6 +64,16 @@ export function UserMenu({ email, role }: { email: string; role: string }) {
           <p className="mt-0.5 text-xs text-muted-foreground">{role}</p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {/* Member management is account administration, not a page action —
+            it belongs with identity rather than beside "Upload document". */}
+        {canManageMembers ? (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href="/admin/users">Manage members</Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        ) : null}
         <DropdownMenuItem onSelect={signOut}>Sign out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

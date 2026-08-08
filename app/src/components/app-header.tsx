@@ -2,7 +2,7 @@ import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
 import { UserMenu } from "@/components/user-menu";
 import { getCurrentUser } from "@/lib/session";
-import { ROLE_LABEL } from "@/lib/roles";
+import { ROLE_LABEL, rankForRole } from "@/lib/roles";
 
 /**
  * Sticky top bar for authenticated pages: the logo (links home) on the left,
@@ -42,7 +42,11 @@ export async function AppHeader({ children }: { children?: React.ReactNode }) {
             </>
           ) : null}
           {user ? (
-            <UserMenu email={user.email} role={ROLE_LABEL[user.role]} />
+            <UserMenu
+              email={user.email}
+              role={ROLE_LABEL[user.role]}
+              canManageMembers={rankForRole(user.role) >= 3}
+            />
           ) : null}
         </div>
       </div>

@@ -18,8 +18,10 @@ import {
  * every ancestor in one click rather than only the previous step, which is what
  * "back" cannot do once pages nest two deep.
  *
- * Documents is always the root: it is the dashboard, and the portal's reason to
- * exist. The last crumb is the current page and is not a link.
+ * Documents is always the root: this is only used inside the document tree.
+ * Pages that sit beside it — account administration — use BackButton instead,
+ * since a breadcrumb there would imply a parent that does not exist. The last
+ * crumb is the current page and is not a link.
  */
 export function PageBreadcrumb({
   trail,

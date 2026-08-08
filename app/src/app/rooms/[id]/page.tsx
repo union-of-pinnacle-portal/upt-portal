@@ -12,6 +12,7 @@ import { documentKind, listVisibleForUser } from "@/lib/documents";
 import { documentCategories } from "@/lib/categories";
 import { listCategoryNames } from "@/lib/category-store";
 import { AppHeader } from "@/components/app-header";
+import { EmptyState } from "@/components/empty-state";
 import { PageBreadcrumb } from "@/components/page-breadcrumb";
 import { RoomMemberManager } from "@/components/room-member-manager";
 import {
@@ -19,6 +20,7 @@ import {
   type DocumentRow,
 } from "@/components/documents-table";
 import { Card, CardContent } from "@/components/ui/card";
+import { FileText, UserPlus } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -118,9 +120,11 @@ export default async function RoomPage({
               </p>
 
               {rows.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No documents filed to this room yet.
-                </p>
+                <EmptyState
+                  icon={FileText}
+                  title="No documents in this room"
+                  description="Documents filed here appear in this list and on the main documents page."
+                />
               ) : (
                 // The same table as the dashboard, minus the Room column: every
                 // row here is in this room, so it would repeat one value.
@@ -147,7 +151,11 @@ export default async function RoomPage({
               {canAssign ? (
                 <RoomMemberManager roomId={room.id} members={members} />
               ) : members.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No members yet.</p>
+                <EmptyState
+                  icon={UserPlus}
+                  title="No members yet"
+                  description="A Chair or Super User can add people to this room."
+                />
               ) : (
                 <ul className="divide-y divide-border rounded-lg border border-border">
                   {members.map((member) => (

@@ -4,6 +4,16 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { EmptyState } from "@/components/empty-state";
+import { UserX } from "lucide-react";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -75,45 +85,46 @@ export function UserManagementTable({
       />
 
       {error && <p className="text-sm text-destructive">{error}</p>}
-      {success && <p className="text-sm text-green-600">{success}</p>}
+      {success && <p className="text-sm text-foreground">{success}</p>}
 
       <div className="overflow-x-auto rounded-lg border border-border bg-background">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border text-left text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              <th className="px-4 py-3">Email</th>
-              <th className="px-4 py-3">Current role</th>
-              <th className="px-4 py-3">Change role</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Email</TableHead>
+              <TableHead>Current role</TableHead>
+              <TableHead>Change role</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {filtered.length === 0 ? (
-              <tr>
-                <td colSpan={3} className="px-4 py-8 text-center text-muted-foreground">
-                  No users found.
-                </td>
-              </tr>
+              <TableRow>
+                <TableCell colSpan={3} className="p-0">
+                  <EmptyState
+                    icon={UserX}
+                    title="No members found"
+                    description="Try a different search term."
+                  />
+                </TableCell>
+              </TableRow>
             ) : (
               filtered.map((u) => {
                 const isSelf = u.email === currentUserEmail;
                 const canChange = canChangeRole(u);
                 return (
-                  <tr
-                    key={u.id}
-                    className="border-b border-border/60 last:border-0 hover:bg-muted/40"
-                  >
-                    <td className="px-4 py-3 font-medium">
+                  <TableRow key={u.id}>
+                    <TableCell className="font-medium">
                       {u.email}
                       {isSelf && (
                         <span className="ml-2 text-xs font-normal text-muted-foreground">(you)</span>
                       )}
-                    </td>
-                    <td className="px-4 py-3">
+                    </TableCell>
+                    <TableCell>
                       <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium capitalize">
                         {ROLE_LABEL[u.role as Role] ?? u.role}
                       </span>
-                    </td>
-                    <td className="px-4 py-3">
+                    </TableCell>
+                    <TableCell>
                       {canChange ? (
                         <Select
                           defaultValue={u.role}
@@ -140,13 +151,13 @@ export function UserManagementTable({
                             : "—"}
                         </span>
                       )}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 );
               })
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
