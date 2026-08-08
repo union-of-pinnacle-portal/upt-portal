@@ -14,26 +14,6 @@
 export const MAX_CATEGORY_LENGTH = 60;
 
 /**
- * The categories a fresh install starts with (see `npm run seed-categories`).
- * Only a starting point — the list lives in DynamoDB once seeded, and editing
- * this array does not change an existing deployment.
- */
-export const DEFAULT_CATEGORIES = [
-  "Meeting Minutes",
-  "Agendas",
-  "Bylaws & Governance",
-  "Financials",
-  "Campaigns & Actions",
-  "Tenant Resources",
-  "Legal",
-  "Outreach & Media",
-  "Onboarding & Training",
-  "Reports & Research",
-  "Forms & Templates",
-  "Other",
-] as const;
-
-/**
  * Clean up a category name for storage and display: trim, collapse internal
  * whitespace. Returns null if the result is empty or too long, which callers
  * turn into a validation error.

@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { getCurrentUser } from "@/lib/session";
 import { rankForRole, toRole } from "@/lib/roles";
 import { listRoomsForUser, listRoomMembers } from "@/lib/rooms";
 import { AppHeader } from "@/components/app-header";
+import { BackButton } from "@/components/back-button";
 import { UserManagementTable } from "@/components/user-management-table";
 import UserMetadata from "supertokens-node/recipe/usermetadata";
 import supertokens from "supertokens-node";
@@ -62,15 +62,13 @@ export default async function AdminUsersPage() {
   return (
     <div className="min-h-svh bg-muted/30">
       <AppHeader />
-      <main className="mx-auto w-full max-w-4xl px-6 py-8">
+      {/* Width and navigation match /rooms: same shell, same breadcrumb, so
+          the admin pages do not feel like a different app. */}
+      <main className="mx-auto w-full max-w-[100rem] px-6 py-8 lg:px-10">
+        <BackButton href="/dashboard" label="Back to documents" />
+
         <div className="mb-6">
-          <Link
-            href="/dashboard"
-            className="text-sm text-muted-foreground hover:underline"
-          >
-            ← Back to dashboard
-          </Link>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight">
+          <h1 className="text-2xl font-semibold tracking-tight">
             Manage members
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">

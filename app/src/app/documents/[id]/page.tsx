@@ -89,7 +89,9 @@ export default async function DocumentPage({
         ) : null}
       </AppHeader>
 
-      <main className="mx-auto w-full max-w-[100rem] px-6 py-8 lg:px-10">
+      {/* Narrower than the dashboard on purpose: this page is for reading and
+          writing prose, not scanning a table. The header stays full width. */}
+      <main className="mx-auto w-full max-w-5xl px-6 py-8">
         <div className="print-hide">
           <PageBreadcrumb trail={[{ label: doc.title }]} />
         </div>

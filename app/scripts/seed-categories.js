@@ -35,9 +35,9 @@ const TABLE_NAME = process.env.PORTAL_TABLE_NAME || "upt-portal";
 const AWS_REGION = process.env.AWS_REGION || "us-east-1";
 const CATEGORIES_PK = "CATEGORIES";
 
-// Kept in sync by hand with DEFAULT_CATEGORIES in src/lib/categories.ts. The
-// app never reads that constant at runtime — it is only ever a seed — so a
-// drift here changes nothing for an already-seeded deployment.
+// The starting vocabulary. This is the only definition: the app reads
+// categories from DynamoDB, never from a constant, so editing this list only
+// affects what a fresh `--apply` would add.
 const DEFAULT_CATEGORIES = [
   "Meeting Minutes",
   "Agendas",

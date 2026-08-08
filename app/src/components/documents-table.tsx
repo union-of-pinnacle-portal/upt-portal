@@ -20,7 +20,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowDown, ArrowUp, ArrowUpDown, SlidersHorizontal } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  SearchX,
+  SlidersHorizontal,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,6 +47,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DocumentActions } from "@/components/document-actions";
+import { EmptyState } from "@/components/empty-state";
 import { UNFILED } from "@/lib/filters";
 import type { DocumentKind } from "@/lib/document-formats";
 
@@ -450,11 +457,12 @@ export function DocumentsTable({
           <TableBody>
             {table.getRowModel().rows.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="py-10 text-center text-muted-foreground"
-                >
-                  No documents match those filters.
+                <TableCell colSpan={columns.length} className="p-0">
+                  <EmptyState
+                    icon={SearchX}
+                    title="No documents match those filters"
+                    description="Try a different search term, or clear the filters."
+                  />
                 </TableCell>
               </TableRow>
             ) : (
