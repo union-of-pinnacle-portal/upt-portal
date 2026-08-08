@@ -135,6 +135,10 @@ export function buildStorageKey(id: string, filename: string): string {
   return `documents/${id}/${safe}`;
 }
 
+export function buildContentKey(id: string): string {
+  return `pages/${id}/content.json`;
+}
+
 /**
  * The S3 object key for a replacement file (version 2 and up).
  *
