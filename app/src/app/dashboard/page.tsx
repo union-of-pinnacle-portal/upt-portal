@@ -107,6 +107,11 @@ export default async function DashboardPage() {
             <Link href="/rooms">Committee rooms</Link>
           </Button>
         ) : null}
+        {user.rank >= 3 ? (
+          <Button asChild variant="outline" size="sm">
+            <Link href="/admin/users">Manage members</Link>
+          </Button>
+        ) : null}
         {canUpload ? (
           <UploadDocumentDialog
             rooms={writableRooms}
