@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/session";
 import { canViewRank } from "@/lib/roles";
 import { canWriteInRoom } from "@/lib/rooms";
 import {
+  currentVersionNumber,
   documentKind,
   getDocument,
   readPageContent,
@@ -55,6 +56,14 @@ export async function GET(
  * Save the editor content as a new version. Requires write access to the
  * document's Committee Room, the same as every other change to it.
  *
+ * Concurrency is handled by `baseVersion`, not by the lock. The editor sends
+ * the version it loaded; if the document has moved on since, the save is
+ * refused with a 409 rather than quietly becoming the newest version. Without
+ * this, two people who both opened the document before either saved would each
+ * write a fresh version, and whoever saved last would silently replace the
+ * other's work. The lock prevents that happening in the first place, but it is
+ * only a hint — this is the check that makes losing an edit impossible.
+ *
  * The edit lock is advisory and deliberately NOT enforced here: a lock exists
  * to stop two people unknowingly working in parallel, not to authorize the
  * write. Refusing a save because a lease expired mid-edit would throw away
@@ -80,7 +89,7 @@ export async function PUT(
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
   }
 
-  let body: { content?: unknown };
+  let body: { content?: unknown; baseVersion?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -109,6 +118,21 @@ export async function PUT(
       { error: "content must be JSON." },
       { status: 400 },
     );
+  }
+
+  // Optimistic concurrency. Omitted by older clients, in which case we fall
+  // back to the previous behaviour rather than refusing the save outright.
+  if (typeof body.baseVersion === "number") {
+    const current = await currentVersionNumber(id);
+    if (body.baseVersion !== current) {
+      return NextResponse.json(
+        {
+          error:
+            "This document changed while you were editing it. Reload to see the current version — your text is still in the editor, so you can copy anything you need first.",
+        },
+        { status: 409 },
+      );
+    }
   }
 
   const saved = await savePageContent(doc, content, user.email);

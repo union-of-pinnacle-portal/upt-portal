@@ -2,7 +2,12 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/session";
 import { canViewRank } from "@/lib/roles";
 import { canWriteInRoom } from "@/lib/rooms";
-import { documentKind, getDocument, readPageContent } from "@/lib/documents";
+import {
+  currentVersionNumber,
+  documentKind,
+  getDocument,
+  readPageContent,
+} from "@/lib/documents";
 import { getLock } from "@/lib/document-locks";
 import { documentCategories } from "@/lib/categories";
 import { listCategoryNames } from "@/lib/category-store";
@@ -58,9 +63,10 @@ export default async function DocumentPage({
     notFound();
   }
 
-  const [content, lock] = await Promise.all([
+  const [content, lock, version] = await Promise.all([
     readPageContent(doc),
     getLock(id),
+    currentVersionNumber(id),
   ]);
   const lockedByOther =
     lock && lock.heldBy !== user.email ? lock.heldBy : null;
@@ -118,6 +124,7 @@ export default async function DocumentPage({
         <PageEditor
           documentId={doc.id}
           initialContent={content}
+          baseVersion={version}
           canEdit={canWrite}
           lockedBy={lockedByOther}
         />

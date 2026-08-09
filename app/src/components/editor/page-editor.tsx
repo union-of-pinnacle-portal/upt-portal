@@ -49,10 +49,13 @@ export function PageEditor({
   initialContent,
   canEdit,
   lockedBy,
+  baseVersion,
 }: {
   documentId: string;
   /** Serialized Lexical state, or null for a document with no body yet. */
   initialContent: string | null;
+  /** The version this content came from, sent back to detect a stale save. */
+  baseVersion: number;
   /** Whether this user may write the document's room at all. */
   canEdit: boolean;
   /** Someone else's email if they hold the lock, else null. */
@@ -68,6 +71,11 @@ export function PageEditor({
   // renders from it, so state would re-render the whole editor as you type.
   const latest = useRef<string | null>(initialContent);
 
+  // The version the editor is working from. Sent with every save so the server
+  // can refuse one written against content someone else has already replaced,
+  // and advanced on each successful save so consecutive saves keep working.
+  const base = useRef(baseVersion);
+
   const editable = canEdit && !lockedBy;
 
   const save = useCallback(async () => {
@@ -78,12 +86,16 @@ export function PageEditor({
       const res = await fetch(`/api/documents/${documentId}/content`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: latest.current }),
+        body: JSON.stringify({
+          content: latest.current,
+          baseVersion: base.current,
+        }),
       });
       if (!res.ok) {
         throw new Error((await res.json()).error ?? "Could not save.");
       }
-      const { savedAt: at } = await res.json();
+      const { savedAt: at, version } = await res.json();
+      if (typeof version === "number") base.current = version;
       setSavedAt(at);
       setDirty(false);
       router.refresh();

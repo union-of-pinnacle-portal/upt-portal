@@ -366,6 +366,16 @@ export async function nextVersionNumber(id: string): Promise<number> {
   return stored.length === 0 ? 2 : stored[0].version + 1;
 }
 
+/**
+ * The version a reader is currently looking at.
+ *
+ * Version 1 is synthesized for documents never replaced, so "no stored
+ * versions" still has a current version of 1 rather than 0.
+ */
+export async function currentVersionNumber(id: string): Promise<number> {
+  return (await nextVersionNumber(id)) - 1;
+}
+
 export interface AddVersionInput {
   document: PortalDocument;
   version: number;
