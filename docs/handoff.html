@@ -1,0 +1,1891 @@
+<title>UPT Portal: Handover and Operations Guide</title>
+<style>
+  :root {
+    --ground: #FBFCFB;
+    --surface: #FFFFFF;
+    --sunken: #F1F5F3;
+    --ink: #14201D;
+    --ink-mid: #3C4B47;
+    --ink-muted: #5F6D68;
+    --rule: #DEE5E2;
+    --rule-strong: #C6D1CD;
+    --accent: #0E5B4C;
+    --accent-ink: #0A4437;
+    --accent-soft: #E3EEEA;
+    --caution: #8A5712;
+    --caution-soft: #F7EFE1;
+    --caution-rule: #E4CDA4;
+    --danger: #8E3320;
+    --danger-soft: #F8E9E5;
+    --danger-rule: #E5C2B8;
+    --shadow: 0 1px 2px rgba(20, 32, 29, .05), 0 8px 24px -16px rgba(20, 32, 29, .3);
+
+    --font-display: ui-serif, "Iowan Old Style", Georgia, "Times New Roman", serif;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", ui-sans-serif, system-ui, "Helvetica Neue", sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0D1312;
+      --surface: #141C1A;
+      --sunken: #101817;
+      --ink: #E7EDEA;
+      --ink-mid: #C3CFCB;
+      --ink-muted: #93A19C;
+      --rule: #253230;
+      --rule-strong: #35443F;
+      --accent: #58C6A9;
+      --accent-ink: #83DAC2;
+      --accent-soft: #16302B;
+      --caution: #D6A55D;
+      --caution-soft: #2A2318;
+      --caution-rule: #4A3D25;
+      --danger: #E0917C;
+      --danger-soft: #2C1B16;
+      --danger-rule: #4C2E25;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -16px rgba(0, 0, 0, .8);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0D1312;
+    --surface: #141C1A;
+    --sunken: #101817;
+    --ink: #E7EDEA;
+    --ink-mid: #C3CFCB;
+    --ink-muted: #93A19C;
+    --rule: #253230;
+    --rule-strong: #35443F;
+    --accent: #58C6A9;
+    --accent-ink: #83DAC2;
+    --accent-soft: #16302B;
+    --caution: #D6A55D;
+    --caution-soft: #2A2318;
+    --caution-rule: #4A3D25;
+    --danger: #E0917C;
+    --danger-soft: #2C1B16;
+    --danger-rule: #4C2E25;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -16px rgba(0, 0, 0, .8);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:hover { color: var(--accent-ink); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+  /* ---------- shell ---------- */
+
+  .shell {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px 96px;
+  }
+
+  @media (min-width: 1040px) {
+    .shell { display: grid; grid-template-columns: 232px minmax(0, 1fr); gap: 56px; padding: 0 32px 120px; }
+    .masthead { grid-column: 1 / -1; }
+  }
+
+  main { min-width: 0; display: flex; flex-direction: column; gap: 56px; }
+
+  /* ---------- masthead ---------- */
+
+  .masthead {
+    border-bottom: 2px solid var(--ink);
+    padding: 56px 0 28px;
+    margin-bottom: 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--accent);
+    margin: 0;
+  }
+
+  .masthead h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(2.1rem, 5vw, 3.1rem);
+    line-height: 1.08;
+    letter-spacing: -.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .standfirst {
+    font-size: 1.06rem;
+    color: var(--ink-mid);
+    max-width: 62ch;
+    margin: 0;
+  }
+
+  .masthead-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 28px;
+    margin-top: 8px;
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+    font-size: 13px;
+  }
+  .masthead-meta div { display: flex; gap: 8px; }
+  .masthead-meta dt { color: var(--ink-muted); }
+  .masthead-meta dd { margin: 0; font-weight: 500; font-variant-numeric: tabular-nums; }
+
+  /* ---------- contents ---------- */
+
+  .toc { font-size: 13.5px; }
+  .toc h2 {
+    font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-muted); font-weight: 600; margin: 0 0 12px;
+  }
+  .toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; counter-reset: toc; }
+  .toc li { counter-increment: toc; }
+  .toc a {
+    display: grid; grid-template-columns: 22px 1fr; gap: 6px;
+    padding: 4px 6px; border-radius: 4px;
+    color: var(--ink-mid); text-decoration: none; line-height: 1.35;
+  }
+  .toc a::before { content: counter(toc); color: var(--ink-muted); font-variant-numeric: tabular-nums; font-size: 12px; }
+  .toc a:hover { background: var(--accent-soft); color: var(--accent-ink); }
+
+  @media (min-width: 1040px) {
+    .toc-wrap { position: sticky; top: 24px; align-self: start; max-height: calc(100vh - 48px); overflow-y: auto; }
+    .toc-native { display: block; }
+    .toc-collapsible { display: none; }
+  }
+  @media (max-width: 1039px) {
+    .toc-wrap { margin-bottom: 48px; }
+    .toc-native { display: none; }
+    .toc-collapsible { display: block; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); padding: 14px 18px; }
+    .toc-collapsible summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+    .toc-collapsible .toc { margin-top: 14px; }
+  }
+
+  /* ---------- sections ---------- */
+
+  section { scroll-margin-top: 24px; display: flex; flex-direction: column; gap: 20px; }
+
+  .sec-head { display: flex; flex-direction: column; gap: 6px; border-bottom: 1px solid var(--rule-strong); padding-bottom: 12px; }
+  .sec-num { font-size: 11px; letter-spacing: .14em; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
+  h2.sec-title {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: clamp(1.5rem, 3vw, 1.85rem); line-height: 1.15; letter-spacing: -.01em;
+    margin: 0; text-wrap: balance;
+  }
+
+  h3 {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: 1.2rem; line-height: 1.25; margin: 12px 0 0; text-wrap: balance;
+  }
+  h4 { font-size: .95rem; font-weight: 650; margin: 8px 0 0; letter-spacing: -.005em; }
+
+  p { margin: 0; max-width: 74ch; }
+  section > ul, section > ol, .prose ul, .prose ol { margin: 0; padding-left: 22px; max-width: 74ch; display: flex; flex-direction: column; gap: 7px; }
+  li > ul { margin-top: 7px; }
+  strong { font-weight: 650; }
+
+  code {
+    font-family: var(--font-mono); font-size: .855em;
+    background: var(--sunken); border: 1px solid var(--rule);
+    padding: .08em .34em; border-radius: 3px; word-break: break-word;
+  }
+
+  /* ---------- tables ---------- */
+
+  .scroll { overflow-x: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 480px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th {
+    font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-muted); font-weight: 600; background: var(--sunken);
+    white-space: nowrap; position: sticky; top: 0;
+  }
+  tr:last-child td { border-bottom: none; }
+  td code { font-size: .82em; }
+  .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* ---------- callouts ---------- */
+
+  .note {
+    border: 1px solid var(--rule); border-left: 3px solid var(--accent);
+    background: var(--surface); border-radius: 0 6px 6px 0;
+    padding: 14px 18px; display: flex; flex-direction: column; gap: 8px;
+    box-shadow: var(--shadow);
+  }
+  .note > p, .note > ul, .note > ol { max-width: none; }
+  .note-label {
+    font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+    font-weight: 650; color: var(--accent);
+  }
+  .note.caution { border-left-color: var(--caution); background: var(--caution-soft); border-color: var(--caution-rule); }
+  .note.caution .note-label { color: var(--caution); }
+  .note.danger { border-left-color: var(--danger); background: var(--danger-soft); border-color: var(--danger-rule); }
+  .note.danger .note-label { color: var(--danger); }
+
+  /* ---------- commands ---------- */
+
+  pre {
+    margin: 0; overflow-x: auto; background: var(--sunken);
+    border: 1px solid var(--rule); border-radius: 6px;
+    padding: 14px 16px; font-family: var(--font-mono); font-size: 13px; line-height: 1.6;
+  }
+  pre code { background: none; border: none; padding: 0; font-size: inherit; }
+  .cmt { color: var(--ink-muted); }
+
+  /* ---------- procedures ---------- */
+
+  ol.steps { list-style: none; counter-reset: step; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 14px; }
+  ol.steps > li {
+    counter-increment: step; position: relative; padding-left: 38px; max-width: 74ch;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  ol.steps > li::before {
+    content: counter(step); position: absolute; left: 0; top: 1px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--accent-soft); color: var(--accent-ink);
+    font-size: 12px; font-weight: 650; font-variant-numeric: tabular-nums;
+    display: flex; align-items: center; justify-content: center;
+  }
+  ol.steps ul { padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 5px; }
+  .outcome { font-size: 14px; color: var(--ink-mid); border-left: 2px solid var(--rule-strong); padding-left: 12px; }
+  .outcome b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- runbook cards ---------- */
+
+  .runbook { border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; }
+  .runbook > h3 { margin-top: 0; }
+  .runbook-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 12.5px; color: var(--ink-muted); }
+
+  /* ---------- chips ---------- */
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11.5px; font-weight: 600; letter-spacing: .01em;
+    padding: 2px 8px; border-radius: 11px; white-space: nowrap;
+    background: var(--sunken); color: var(--ink-mid); border: 1px solid var(--rule);
+  }
+  .chip.rank { background: var(--accent-soft); color: var(--accent-ink); border-color: transparent; }
+  .chip.tbc { background: var(--caution-soft); color: var(--caution); border-color: var(--caution-rule); }
+  .chip.gap { background: var(--danger-soft); color: var(--danger); border-color: var(--danger-rule); }
+
+  /* ---------- architecture diagram ---------- */
+
+  .diagram { border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); padding: 24px; overflow-x: auto; }
+  .diagram-inner { min-width: 520px; display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .box {
+    border: 1px solid var(--rule-strong); border-radius: 5px; background: var(--ground);
+    padding: 11px 16px; text-align: center; min-width: 150px;
+  }
+  .box .box-title { font-weight: 650; font-size: 14px; display: block; }
+  .box .box-sub { font-size: 12px; color: var(--ink-muted); display: block; margin-top: 1px; }
+  .box.primary { border-color: var(--accent); background: var(--accent-soft); }
+  .box.primary .box-sub { color: var(--accent-ink); }
+  .arrow { width: 1px; background: var(--rule-strong); height: 26px; position: relative; }
+  .arrow::after {
+    content: ""; position: absolute; bottom: -1px; left: -3.5px;
+    border-left: 4px solid transparent; border-right: 4px solid transparent;
+    border-top: 6px solid var(--rule-strong);
+  }
+  .arrow-label { font-size: 11.5px; color: var(--ink-muted); padding: 4px 0; }
+  .lane { display: flex; gap: 14px; flex-wrap: nowrap; justify-content: center; }
+  .lane .box { min-width: 140px; }
+  .bracket { width: 78%; height: 1px; background: var(--rule-strong); }
+  .diagram-caption { font-size: 13px; color: var(--ink-muted); margin-top: 18px; max-width: 68ch; }
+
+  /* ---------- key-value list ---------- */
+
+  .kv { display: grid; gap: 0; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); overflow: hidden; }
+  .kv > div { display: grid; grid-template-columns: minmax(140px, 210px) 1fr; gap: 16px; padding: 10px 16px; border-bottom: 1px solid var(--rule); font-size: 14px; }
+  .kv > div:last-child { border-bottom: none; }
+  .kv dt { color: var(--ink-muted); }
+  .kv dd { margin: 0; }
+  @media (max-width: 560px) { .kv > div { grid-template-columns: 1fr; gap: 2px; } }
+
+  footer {
+    grid-column: 1 / -1; margin-top: 72px; padding-top: 24px;
+    border-top: 1px solid var(--rule); font-size: 13px; color: var(--ink-muted);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+
+  @media print {
+    .toc-wrap { display: none; }
+    .shell { display: block; }
+  }
+</style>
+
+<div class="shell">
+
+  <header class="masthead">
+    <p class="eyebrow">Union of Pinnacle Tenants</p>
+    <h1>UPT Portal: Handover and Operations Guide</h1>
+    <p class="standfirst">
+      Everything the UPT team needs to run, maintain and change the member portal: what it does, how it
+      is built, where it lives, how to deploy it, and what to do when something breaks.
+    </p>
+    <dl class="masthead-meta">
+      <div><dt>Prepared</dt><dd>9 August 2026</dd></div>
+      <div><dt>Applies to</dt><dd><code>main</code> at commit <code>13199c7</code></dd></div>
+      <div><dt>AWS account</dt><dd>444655872449 (us-east-1)</dd></div>
+      <div><dt>Status</dt><dd>Live, in use</dd></div>
+    </dl>
+  </header>
+
+  <div class="toc-wrap">
+    <nav class="toc toc-native" aria-label="Contents">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#s1">What the portal is</a></li>
+        <li><a href="#s2">Roles, ranks and committee rooms</a></li>
+        <li><a href="#s3">AWS account and infrastructure</a></li>
+        <li><a href="#s4">Application implementation</a></li>
+        <li><a href="#s5">Infrastructure implementation</a></li>
+        <li><a href="#s6">Deployment and release</a></li>
+        <li><a href="#s7">Day-to-day operations</a></li>
+        <li><a href="#s8">Monitoring and troubleshooting</a></li>
+        <li><a href="#s9">Configuration and secrets</a></li>
+        <li><a href="#s10">Access and permissions</a></li>
+        <li><a href="#s11">Maintenance</a></li>
+        <li><a href="#s12">Known limitations</a></li>
+        <li><a href="#s13">Reference information</a></li>
+        <li><a href="#s14">Ownership and support</a></li>
+      </ol>
+    </nav>
+    <details class="toc-collapsible">
+      <summary>Contents</summary>
+      <nav class="toc" aria-label="Contents">
+        <ol>
+          <li><a href="#s1">What the portal is</a></li>
+          <li><a href="#s2">Roles, ranks and committee rooms</a></li>
+          <li><a href="#s3">AWS account and infrastructure</a></li>
+          <li><a href="#s4">Application implementation</a></li>
+          <li><a href="#s5">Infrastructure implementation</a></li>
+          <li><a href="#s6">Deployment and release</a></li>
+          <li><a href="#s7">Day-to-day operations</a></li>
+          <li><a href="#s8">Monitoring and troubleshooting</a></li>
+          <li><a href="#s9">Configuration and secrets</a></li>
+          <li><a href="#s10">Access and permissions</a></li>
+          <li><a href="#s11">Maintenance</a></li>
+          <li><a href="#s12">Known limitations</a></li>
+          <li><a href="#s13">Reference information</a></li>
+          <li><a href="#s14">Ownership and support</a></li>
+        </ol>
+      </nav>
+    </details>
+  </div>
+
+  <main>
+
+    <!-- ============ 1 ============ -->
+    <section id="s1">
+      <div class="sec-head">
+        <span class="sec-num">SECTION 01</span>
+        <h2 class="sec-title">What the portal is</h2>
+      </div>
+
+      <p>
+        The UPT Portal is a private document library for union members. It replaces the mix of WhatsApp
+        threads and shared Google Drive folders that UPT used before. Members sign in with an email address,
+        and each member sees only the documents their access level allows.
+      </p>
+
+      <h3>What it does today</h3>
+      <ul>
+        <li><strong>Members read documents.</strong> After signing in, a member sees a single list of every document they are allowed to see, filterable by category and committee room.</li>
+        <li><strong>Committee members add documents.</strong> Either by uploading a file (Word, PDF, anything) or by writing a page directly in the portal with a built-in editor.</li>
+        <li><strong>Access is enforced on the server.</strong> A document is served only after the server checks the signed-in member's access level. A restricted document cannot be reached by guessing or sharing its web address.</li>
+        <li><strong>Nothing is overwritten.</strong> Replacing a file or saving an edited page creates a new version, and the old one stays downloadable from the document's history.</li>
+        <li><strong>Documents have a lifecycle.</strong> Draft, published, archived. Only published documents are visible to ordinary members.</li>
+      </ul>
+
+      <h3>What it deliberately does not do</h3>
+      <ul>
+        <li>No automatic import or sync from Google Drive. Existing documents are added by hand through the upload form.</li>
+        <li>No folders inside a committee room. Documents are organised by category tags, not a folder tree.</li>
+        <li>No project management, tasks, messaging or notifications. Those were scoped as later phases and have not been built.</li>
+        <li>No public pages. Every page requires a signed-in account.</li>
+      </ul>
+
+      <h3>How the pieces fit together</h3>
+
+      <div class="diagram">
+        <div class="diagram-inner">
+          <div class="box"><span class="box-title">Member's browser</span><span class="box-sub">Any modern browser, phone or desktop</span></div>
+          <span class="arrow-label">signs in, requests pages</span>
+          <div class="arrow"></div>
+          <div class="box primary"><span class="box-title">The portal application</span><span class="box-sub">Next.js, hosted on Vercel</span></div>
+          <div class="arrow"></div>
+          <div class="bracket"></div>
+          <div class="arrow"></div>
+          <div class="lane">
+            <div class="box"><span class="box-title">SuperTokens</span><span class="box-sub">Accounts, passwords, sessions, roles</span></div>
+            <div class="box"><span class="box-title">DynamoDB</span><span class="box-sub">Document records, rooms, categories</span></div>
+            <div class="box"><span class="box-title">S3</span><span class="box-sub">The actual files and page contents</span></div>
+          </div>
+        </div>
+        <p class="diagram-caption">
+          Files are the exception to the flow above: when someone uploads or downloads a file, the browser
+          talks to S3 directly using a temporary signed link that the application issues after it has checked
+          permissions. Large files never pass through the application server. The application also sends
+          account emails (verification, password reset) through Gmail's SMTP service.
+        </p>
+      </div>
+
+      <h3>The four systems in plain terms</h3>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr><th>System</th><th>What it holds</th><th>Who runs it</th><th>If it goes down</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Vercel</strong></td>
+              <td>The application itself. Rebuilt and redeployed every time code is pushed to GitHub.</td>
+              <td>Vercel (hosting company)</td>
+              <td>The portal is unreachable. Nothing is lost.</td>
+            </tr>
+            <tr>
+              <td><strong>SuperTokens</strong></td>
+              <td>Member accounts, passwords, Google sign-in links, active sessions, and each member's role.</td>
+              <td>SuperTokens managed service</td>
+              <td>Nobody can sign in. Existing sessions keep working until they expire.</td>
+            </tr>
+            <tr>
+              <td><strong>DynamoDB</strong> (AWS)</td>
+              <td>Document details (title, category, access level, status), committee rooms, room memberships, categories, version history.</td>
+              <td>UPT's own AWS account</td>
+              <td>The document list fails to load. The portal shows an error banner rather than crashing.</td>
+            </tr>
+            <tr>
+              <td><strong>S3</strong> (AWS)</td>
+              <td>The document files themselves and the contents of portal-written pages.</td>
+              <td>UPT's own AWS account</td>
+              <td>Documents are listed but cannot be opened or downloaded.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>What is in the portal right now</h3>
+      <p>Verified against the live system on 9 August 2026:</p>
+      <div class="kv">
+        <div><dt>Documents</dt><dd>5 (3 uploaded files, 2 portal-written pages). All published, all visible to every member.</dd></div>
+        <div><dt>Committee rooms</dt><dd>3</dd></div>
+        <div><dt>Categories</dt><dd>16</dd></div>
+        <div><dt>Files stored</dt><dd>40 objects, about 8 MB total (includes older versions)</dd></div>
+        <div><dt>Member accounts</dt><dd>Held in SuperTokens. Count visible at <code>/admin/users</code> in the portal.</dd></div>
+      </div>
+      <p>
+        This is a small, early-stage system. Several design decisions were made for this scale and are noted
+        in <a href="#s12">section 12</a> where they will need revisiting.
+      </p>
+    </section>
+
+    <!-- ============ 2 ============ -->
+    <section id="s2">
+      <div class="sec-head">
+        <span class="sec-num">SECTION 02</span>
+        <h2 class="sec-title">Roles, ranks and committee rooms</h2>
+      </div>
+
+      <p>
+        This is the most important section for anyone operating the portal. Almost every "why can't this
+        person see or do X" question is answered here.
+      </p>
+
+      <h3>The four access levels</h3>
+      <p>
+        Every member has exactly one role. The role gives them a <strong>rank</strong>, a number from 1 to 4.
+        Every document has a minimum rank. A member can see a document when their rank is equal to or higher
+        than the document's minimum rank.
+      </p>
+
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr><th>Rank</th><th>Name shown in the portal</th><th>Stored name (in code and data)</th><th>Can do</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="num"><span class="chip rank">1</span></td>
+              <td><strong>General Member</strong></td>
+              <td><code>general</code></td>
+              <td>Read documents at level 1. Cannot add or change anything, in any room.</td>
+            </tr>
+            <tr>
+              <td class="num"><span class="chip rank">2</span></td>
+              <td><strong>Committee Member</strong></td>
+              <td><code>contributor</code></td>
+              <td>Read levels 1 and 2. Can add and edit documents, but only inside committee rooms they belong to.</td>
+            </tr>
+            <tr>
+              <td class="num"><span class="chip rank">3</span></td>
+              <td><strong>Committee Chair</strong></td>
+              <td><code>committee_chair</code></td>
+              <td>Read levels 1 to 3. Adds and edits within their rooms, manages who is in those rooms, and can change other members' roles below their own level.</td>
+            </tr>
+            <tr>
+              <td class="num"><span class="chip rank">4</span></td>
+              <td><strong>Super User</strong></td>
+              <td><code>committee_head</code></td>
+              <td>Reads everything. Writes in every room. Creates committee rooms. Permanently deletes documents. The administrator role.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note caution">
+        <span class="note-label">Naming trap</span>
+        <p>
+          The names stored in the system are not the names shown on screen. <code>contributor</code> means
+          "Committee Member" and <code>committee_head</code> means "Super User". These older names were kept
+          so that live member records did not have to be rewritten. When using a command line tool or reading
+          data directly, you must use the stored name. When talking to a member, use the display name.
+        </p>
+      </div>
+
+      <h3>The rule that explains everything: rooms control writing, not reading</h3>
+      <p>
+        A <strong>committee room</strong> is a container for a committee's documents, for example Housing,
+        Legal, Outreach. It answers one question only: <em>who is allowed to add or change documents here?</em>
+      </p>
+      <ul>
+        <li><strong>Reading is global.</strong> A member sees every document at or below their rank, in every room, whether or not they belong to that room. Rooms do not hide anything from anyone.</li>
+        <li><strong>Writing is room-scoped.</strong> To add or edit a document in the Housing room, you must be a member of the Housing room (or a Super User, who can write anywhere).</li>
+      </ul>
+      <p>
+        This was a deliberate choice. If you need a document to be visible to fewer people, raise its
+        <em>access level</em>. Moving it to a different room will not hide it.
+      </p>
+
+      <h3>Unfiled documents</h3>
+      <p>
+        A document does not have to belong to a room. Documents created before rooms existed have no room,
+        and Super Users can deliberately leave a document unfiled. Only Super Users can edit an unfiled
+        document. This is also how the very first document gets uploaded, before any room exists.
+      </p>
+
+      <h3>Who can do what</h3>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Action</th>
+              <th>General Member</th>
+              <th>Committee Member</th>
+              <th>Committee Chair</th>
+              <th>Super User</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>View documents at or below their rank</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+            <tr><td>See drafts and archived documents</td><td>No</td><td>In their rooms</td><td>In their rooms</td><td>Everywhere</td></tr>
+            <tr><td>Upload a file or create a page</td><td>No</td><td>In their rooms<sup>*</sup></td><td>In their rooms</td><td>Anywhere</td></tr>
+            <tr><td>Edit document details, publish, archive</td><td>No</td><td>In their rooms</td><td>In their rooms</td><td>Anywhere</td></tr>
+            <tr><td>Replace a file / save a page edit</td><td>No</td><td>In their rooms</td><td>In their rooms</td><td>Anywhere</td></tr>
+            <tr><td>Add or remove people from a room</td><td>No</td><td>No</td><td>Their own rooms</td><td>Any room</td></tr>
+            <tr><td>Change another member's role</td><td>No</td><td>No</td><td>Below their own rank</td><td>Anyone below rank 4</td></tr>
+            <tr><td>Create a committee room</td><td>No</td><td>No</td><td>No</td><td>Yes</td></tr>
+            <tr><td>Permanently delete a document</td><td>No</td><td>No</td><td>No</td><td>Yes</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:13.5px;color:var(--ink-muted)">
+        <sup>*</sup> The permission rules in the code allow a Committee Member to upload in their rooms, but
+        the "Add document" button on the dashboard is currently only shown to rank 3 and above. See
+        <a href="#s12">section 12</a>.
+      </p>
+
+      <h3>Two limits on role changes</h3>
+      <ul>
+        <li>Nobody can promote another member above their own rank.</li>
+        <li>A Super User's role can only be changed by that Super User themselves. This prevents two administrators locking each other out.</li>
+      </ul>
+
+      <div class="note">
+        <span class="note-label">Remember</span>
+        <p>
+          A member's role is copied into their sign-in session when they log in. After you change someone's
+          role, <strong>they must sign out and sign back in</strong> before the change takes effect. This
+          catches people out constantly.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ 3 ============ -->
+    <section id="s3">
+      <div class="sec-head">
+        <span class="sec-num">SECTION 03</span>
+        <h2 class="sec-title">AWS account and infrastructure</h2>
+      </div>
+
+      <p>
+        AWS holds the portal's data: the document records and the document files. It does <em>not</em> host
+        the application, which runs on Vercel, and it does not handle sign-in, which is SuperTokens.
+      </p>
+
+      <h3>Account</h3>
+      <div class="kv">
+        <div><dt>Account ID</dt><dd class="num">444655872449</dd></div>
+        <div><dt>Region</dt><dd><code>us-east-1</code> (N. Virginia). Everything is in this one region.</dd></div>
+        <div><dt>Environments</dt><dd>One. There is no separate staging or test environment; see <a href="#s12">section 12</a>.</dd></div>
+        <div><dt>Root account owner</dt><dd><span class="chip tbc">To confirm</span> Which email address owns the AWS account, and who has the root credentials and MFA device.</dd></div>
+        <div><dt>Billing contact</dt><dd><span class="chip tbc">To confirm</span> Payment method and who receives AWS invoices.</dd></div>
+      </div>
+
+      <h3>Resources</h3>
+      <p>Verified live on 9 August 2026.</p>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr><th>Resource</th><th>Name</th><th>Configuration</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>S3 bucket</td>
+              <td><code>upt-portal-documents</code></td>
+              <td>
+                All public access blocked. Encrypted at rest with S3-managed keys. Versioning enabled.
+                Retained if the stack is deleted. CORS allows browser PUT and GET from any origin.
+                Currently 40 objects, about 8 MB.
+              </td>
+            </tr>
+            <tr>
+              <td>DynamoDB table</td>
+              <td><code>upt-portal</code></td>
+              <td>
+                Single table holding every record type. Keys <code>pk</code> / <code>sk</code>.
+                On-demand billing. Point-in-time recovery enabled with a 35 day window. Automatic expiry
+                (TTL) on the <code>expiresAt</code> field. One index, <code>by-rank</code>. Retained if the
+                stack is deleted. Currently 45 items, about 11 KB.
+              </td>
+            </tr>
+            <tr>
+              <td>IAM user (application)</td>
+              <td><code>upt-portal-app</code></td>
+              <td>
+                The identity the application uses. Permitted to read and write the table and its index, and
+                to read and upload objects in the bucket. It cannot delete files and has no other AWS access.
+                One active access key, created 11 July 2026.
+              </td>
+            </tr>
+            <tr>
+              <td>IAM user (deployment)</td>
+              <td><code>upt-admin</code></td>
+              <td>
+                Full administrator access. Used from a developer's machine to deploy infrastructure changes.
+                One active access key, created 11 July 2026. Not used by the running application.
+              </td>
+            </tr>
+            <tr>
+              <td>CloudFormation stacks</td>
+              <td><code>UptPortalStorageStack</code>, <code>UptPortalDataStack</code>, <code>UptPortalAccessStack</code></td>
+              <td>Created and updated by AWS CDK from the <code>infra/</code> folder of the repository.</td>
+            </tr>
+            <tr>
+              <td>CDK support</td>
+              <td><code>CDKToolkit</code>, bucket <code>cdk-hnb659fds-assets-444655872449-us-east-1</code></td>
+              <td>Created automatically by <code>cdk bootstrap</code>. Do not delete.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Networking</h3>
+      <p>
+        There is none to manage. There is no VPC, no load balancer, no server and no fixed IP address. The
+        application reaches DynamoDB and S3 over the public AWS API endpoints, authenticated with the
+        <code>upt-portal-app</code> access key. This is why the infrastructure is small enough to describe on
+        one page.
+      </p>
+
+      <h3>How access to the data is controlled</h3>
+      <ol>
+        <li>The S3 bucket blocks all public access. There is no way to reach a file by URL alone.</li>
+        <li>When a member downloads a document, the application checks their permissions and then generates a signed link that expires after 5 minutes.</li>
+        <li>The application's AWS user can only touch the one table and the one bucket. If its key leaked, the damage is limited to portal data, and the key cannot delete files.</li>
+      </ol>
+
+      <h3>Cost</h3>
+      <p>
+        At this size the AWS cost is small: on-demand DynamoDB with 45 items and a few megabytes of S3 storage
+        will be a few dollars a month at most. Vercel and SuperTokens may have their own plans.
+        <span class="chip tbc">To confirm</span> Current monthly spend across AWS, Vercel and SuperTokens, and
+        which of these are on paid plans.
+      </p>
+    </section>
+
+    <!-- ============ 4 ============ -->
+    <section id="s4">
+      <div class="sec-head">
+        <span class="sec-num">SECTION 04</span>
+        <h2 class="sec-title">Application implementation</h2>
+      </div>
+
+      <p>Written for whoever will maintain the code. Operational readers can skip to <a href="#s7">section 7</a>.</p>
+
+      <h3>Technology</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Layer</th><th>Choice</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>Framework</td><td>Next.js 16, App Router</td><td>Server Components render pages; Route Handlers serve the API. TypeScript throughout.</td></tr>
+            <tr><td>UI</td><td>React 19, Tailwind CSS v4, shadcn/ui, Radix, Lucide icons</td><td>Components added with <code>npx shadcn@latest add &lt;name&gt;</code>.</td></tr>
+            <tr><td>Editor</td><td>Lexical 0.49</td><td>The in-portal page editor. Content stored as Lexical JSON.</td></tr>
+            <tr><td>Word conversion</td><td>mammoth</td><td>Converts <code>.docx</code> to HTML in the browser, which is then turned into editor content.</td></tr>
+            <tr><td>Identity</td><td>supertokens-node 24, supertokens-web-js 0.16</td><td>Email and password, plus Google sign-in. Email verification required.</td></tr>
+            <tr><td>AWS access</td><td>AWS SDK v3</td><td>DynamoDB Document client, S3 client, S3 request presigner.</td></tr>
+            <tr><td>Infrastructure</td><td>AWS CDK 2 (TypeScript)</td><td>See <a href="#s5">section 5</a>.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Repository layout</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Path</th><th>Contains</th></tr></thead>
+          <tbody>
+            <tr><td><code>app/src/app/</code></td><td>Pages and API routes (Next.js App Router file conventions).</td></tr>
+            <tr><td><code>app/src/lib/</code></td><td>The business logic. All permission rules and all data access live here.</td></tr>
+            <tr><td><code>app/src/lib/aws/</code></td><td>DynamoDB and S3 clients, plus resource names and defaults.</td></tr>
+            <tr><td><code>app/src/components/</code></td><td>React components. <code>ui/</code> holds the generated shadcn primitives.</td></tr>
+            <tr><td><code>app/src/config/</code></td><td>SuperTokens front-end and back-end configuration.</td></tr>
+            <tr><td><code>app/scripts/</code></td><td>Command line helpers: set a role, seed categories, run the rank migration.</td></tr>
+            <tr><td><code>infra/lib/</code></td><td>The three CDK stacks. <code>infra/test/</code> holds their tests.</td></tr>
+            <tr><td><code>infra/README.md</code></td><td>The authoritative description of the data model. Keep it updated when the data changes.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Key modules</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>File</th><th>Responsibility</th></tr></thead>
+          <tbody>
+            <tr><td><code>lib/roles.ts</code></td><td>The single definition of roles, ranks, display names and the view check <code>canViewRank</code>. Safe to import from client components: it does no input or output.</td></tr>
+            <tr><td><code>lib/rooms.ts</code></td><td>Committee rooms and memberships, plus the write check <code>canWriteInRoom</code> and the roster check <code>canAssignInRoom</code>.</td></tr>
+            <tr><td><code>lib/documents.ts</code></td><td>Document records, the visible-documents query, version history, page content, and deletion.</td></tr>
+            <tr><td><code>lib/session.ts</code></td><td>Reads the signed-in member from the session cookie and returns their email, role and rank.</td></tr>
+            <tr><td><code>lib/category-store.ts</code></td><td>The category list, which members can extend from the picker.</td></tr>
+            <tr><td><code>lib/document-locks.ts</code></td><td>The advisory "someone else is editing this" lease.</td></tr>
+            <tr><td><code>lib/aws/s3.ts</code></td><td>Signed upload and download links, plus small direct reads and writes for page content.</td></tr>
+            <tr><td><code>middleware.ts</code></td><td>Redirects to the login page when there is no session cookie on <code>/dashboard</code> routes. See the warning below.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note caution">
+        <span class="note-label">Do not mistake the middleware for security</span>
+        <p>
+          <code>middleware.ts</code> only checks that a session cookie exists, and only on <code>/dashboard</code>.
+          It does not validate the session and does not check permissions. Real enforcement happens inside
+          every page and API route, which call <code>getCurrentUser()</code> and then the permission checks.
+          Any new route must do the same; it will not be protected by anything else.
+        </p>
+      </div>
+
+      <h3>API surface</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Route</th><th>Method</th><th>Who may call it</th><th>Purpose</th></tr></thead>
+          <tbody>
+            <tr><td><code>/api/documents/upload-url</code></td><td>POST</td><td>Rank 2 and up</td><td>Step 1 of upload: create an id and a signed upload link.</td></tr>
+            <tr><td><code>/api/documents</code></td><td>POST</td><td>Write access to the target room</td><td>Step 2 of upload: save the document record.</td></tr>
+            <tr><td><code>/api/documents/:id</code></td><td>PATCH</td><td>Write access to that document's room</td><td>Edit title, description, categories, access level, status.</td></tr>
+            <tr><td><code>/api/documents/:id</code></td><td>DELETE</td><td>Super User only</td><td>Permanently delete the record and its history.</td></tr>
+            <tr><td><code>/api/documents/:id/download</code></td><td>GET</td><td>Rank clears the access level; drafts only for room managers</td><td>Redirects to a signed S3 link. Supports <code>?version=n</code> and <code>?inline=1</code>.</td></tr>
+            <tr><td><code>/api/documents/:id/versions</code></td><td>GET</td><td>Same rules as download</td><td>List the version history.</td></tr>
+            <tr><td><code>/api/documents/:id/versions</code></td><td>POST</td><td>Write access to the room</td><td>Record a replacement file and repoint the document at it.</td></tr>
+            <tr><td><code>/api/documents/:id/versions/upload-url</code></td><td>POST</td><td>Write access to the room</td><td>Reserve the next version number and issue a signed upload link.</td></tr>
+            <tr><td><code>/api/documents/:id/content</code></td><td>GET</td><td>Same rules as download</td><td>Read a portal-written page's content.</td></tr>
+            <tr><td><code>/api/documents/:id/content</code></td><td>PUT</td><td>Write access to the room</td><td>Save the page as a new version. Rejects stale saves with 409.</td></tr>
+            <tr><td><code>/api/documents/:id/convert</code></td><td>POST</td><td>Write access to the room</td><td>Turn an uploaded Word file into an editable page.</td></tr>
+            <tr><td><code>/api/documents/:id/lock</code></td><td>POST / DELETE</td><td>Write access to the room</td><td>Take, renew or release the advisory edit lease.</td></tr>
+            <tr><td><code>/api/rooms</code></td><td>POST</td><td>Super User only</td><td>Create a committee room.</td></tr>
+            <tr><td><code>/api/rooms/:id/members</code></td><td>POST / DELETE</td><td>Chair of that room, or any Super User</td><td>Add or remove a room member. The email must already have a portal account.</td></tr>
+            <tr><td><code>/api/admin/users</code></td><td>GET</td><td>Rank 3 and up</td><td>List members. Super Users see everyone (up to 500); Chairs see only their rooms' members.</td></tr>
+            <tr><td><code>/api/admin/users/:id/role</code></td><td>PATCH</td><td>Rank 3 and up, with the limits in <a href="#s2">section 2</a></td><td>Change a member's role.</td></tr>
+            <tr><td><code>/api/auth/set-admin-role</code></td><td>POST</td><td>Anyone holding the bootstrap code</td><td>Promotes a newly registered account to Super User. See <a href="#s12">section 12</a>.</td></tr>
+            <tr><td><code>/api/auth/*</code></td><td>All</td><td>Public</td><td>Handled by SuperTokens: sign up, sign in, verify email, reset password, sign out.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Pages</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Route</th><th>What it is</th></tr></thead>
+          <tbody>
+            <tr><td><code>/</code></td><td>Redirects to <code>/dashboard</code>. There is no public landing page.</td></tr>
+            <tr><td><code>/dashboard</code></td><td>The document list. The main screen for every member.</td></tr>
+            <tr><td><code>/documents/new</code></td><td>Create a portal-written page.</td></tr>
+            <tr><td><code>/documents/[id]</code></td><td>A page document, read or edit in place. Uploaded files redirect straight to the download route.</td></tr>
+            <tr><td><code>/documents/[id]/edit</code></td><td>Edit a document's details.</td></tr>
+            <tr><td><code>/rooms</code>, <code>/rooms/[id]</code></td><td>Committee rooms and their rosters.</td></tr>
+            <tr><td><code>/admin/users</code></td><td>Member and role management. Reached from the account menu, top right.</td></tr>
+            <tr><td><code>/auth/*</code></td><td>Login, register, verify email, forgot password, reset password, Google callback.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Data model</h3>
+      <p>
+        Everything lives in one DynamoDB table. Record type is identified by the prefix on the keys. The
+        authoritative reference, including every field, is <code>infra/README.md</code>. Summary:
+      </p>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Record</th><th>Partition key</th><th>Sort key</th></tr></thead>
+          <tbody>
+            <tr><td>Member (legacy)</td><td><code>USER#&lt;email&gt;</code></td><td><code>USER#&lt;email&gt;</code></td></tr>
+            <tr><td>Document</td><td><code>DOC#&lt;id&gt;</code></td><td><code>DOC#&lt;id&gt;</code></td></tr>
+            <tr><td>Version</td><td><code>DOC#&lt;id&gt;</code></td><td><code>VER#&lt;padded number&gt;</code></td></tr>
+            <tr><td>Edit lock</td><td><code>DOC#&lt;id&gt;</code></td><td><code>LOCK</code></td></tr>
+            <tr><td>Committee room</td><td><code>ROOMS</code></td><td><code>ROOM#&lt;id&gt;</code></td></tr>
+            <tr><td>Room membership</td><td><code>USER#&lt;email&gt;</code> and mirrored to <code>ROOM#&lt;id&gt;</code></td><td><code>ROOM#&lt;id&gt;</code> / <code>MEMBER#&lt;email&gt;</code></td></tr>
+            <tr><td>Category</td><td><code>CATEGORIES</code></td><td><code>CAT#&lt;lowercased name&gt;</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        The single index, <code>by-rank</code>, is keyed on the document's minimum rank and last-updated time.
+        It is what makes the filtered document list a small set of queries rather than a full table scan.
+      </p>
+      <p>
+        Note that member <em>accounts</em> and <em>roles</em> live in SuperTokens, not in this table. The
+        <code>USER#</code> records here carry room memberships.
+      </p>
+
+      <h3>The flows worth understanding</h3>
+
+      <h4>Uploading a file (two steps, on purpose)</h4>
+      <ol>
+        <li>The browser asks the application for an upload link. The application generates a new document id, works out where the file will live in S3, and returns a signed link valid for 5 minutes.</li>
+        <li>The browser uploads the file straight to S3. The file never passes through the application server, so large uploads do not hit hosting limits.</li>
+        <li>The browser then posts the document's details. The server re-derives the storage location from the id and filename rather than trusting the browser, so nobody can point a document record at somebody else's file.</li>
+      </ol>
+      <p>
+        If step 3 never happens (the member closes the tab), the uploaded file is orphaned in S3. No record
+        references it and it is unreachable through the portal.
+      </p>
+
+      <h4>Downloading (the single enforcement point)</h4>
+      <p>
+        <code>/api/documents/:id/download</code> is where document access is decided. It checks the member's
+        rank against the document's level, and hides drafts and archived documents from anyone who cannot
+        manage the room. Anything the member is not allowed to see returns "not found" rather than
+        "forbidden", so the endpoint never reveals that a restricted document exists.
+      </p>
+
+      <h4>Editing a page</h4>
+      <p>Two separate mechanisms, often confused:</p>
+      <ul>
+        <li><strong>The edit lock</strong> is a courtesy. It tells a second editor that someone else is already in the document. It lasts 120 seconds and the editor renews it while you type. It is not a permission check and an expired lock never blocks a save.</li>
+        <li><strong>The version check</strong> is the real protection. The editor sends the version number it loaded. If the document has moved on since, the save is refused with a conflict message rather than silently overwriting the other person's work.</li>
+      </ul>
+
+      <h4>Versions</h4>
+      <p>
+        Every replacement file and every page save becomes a new version with its own file in S3. Nothing is
+        overwritten. One subtlety: version 1 has no stored record. A document that has never been replaced
+        <em>is</em> its own version 1, described by the document record itself, and version 1 is written for
+        real the first time someone replaces the file. Stored version numbers therefore start at 2.
+      </p>
+
+      <h3>Decisions worth knowing before changing anything</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Decision</th><th>Reason</th></tr></thead>
+          <tbody>
+            <tr><td>Rooms scope writing, never reading</td><td>Keeps the read path and its index unchanged, and keeps visibility governed by one number instead of two systems that can disagree.</td></tr>
+            <tr><td>Unauthorised requests return 404, not 403</td><td>A 403 confirms the document exists. A 404 tells the caller nothing.</td></tr>
+            <tr><td>Page content is stored in S3, not in the database record</td><td>The document list returns whole records. A body stored on the record would make every dashboard load fetch the full text of every visible document, and would hit DynamoDB's 400 KB item limit.</td></tr>
+            <tr><td>Deleting a document leaves the file in S3</td><td>The application has no delete permission on the bucket. The record is gone and nothing references the file, so it is orphaned rather than exposed. Removing the bytes needs an infrastructure change.</td></tr>
+            <tr><td>A document cannot be moved between rooms</td><td>Moving a document changes who can write it. Allowing it in the edit form would let a Chair walk a document into a room they control and take ownership of it.</td></tr>
+            <tr><td>Category identity ignores case and spacing</td><td>Stops "Minutes", "minutes" and "  Minutes " becoming three categories. The first spelling wins.</td></tr>
+            <tr><td>The S3 client sets <code>requestChecksumCalculation: "WHEN_REQUIRED"</code></td><td>Without it, the AWS SDK bakes a checksum of an empty body into signed upload links and S3 rejects the real file. Do not remove this line.</td></tr>
+            <tr><td>The document list queries once per rank and merges in memory</td><td>Simple and correct at this size. It will need pagination well before the library reaches thousands of documents.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 5 ============ -->
+    <section id="s5">
+      <div class="sec-head">
+        <span class="sec-num">SECTION 05</span>
+        <h2 class="sec-title">Infrastructure implementation</h2>
+      </div>
+
+      <p>
+        The AWS resources are defined in code using AWS CDK (TypeScript) in the <code>infra/</code> folder,
+        and created through CloudFormation. Nothing was clicked together by hand in the console, and nothing
+        should be: a manual change will be reverted the next time someone deploys.
+      </p>
+
+      <h3>The three stacks</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Stack</th><th>File</th><th>Creates</th></tr></thead>
+          <tbody>
+            <tr><td><code>UptPortalStorageStack</code></td><td><code>infra/lib/storage-stack.ts</code></td><td>The private S3 bucket, with public access blocked, encryption, versioning and browser upload CORS.</td></tr>
+            <tr><td><code>UptPortalDataStack</code></td><td><code>infra/lib/data-stack.ts</code></td><td>The DynamoDB table, its <code>by-rank</code> index, automatic expiry and point-in-time recovery.</td></tr>
+            <tr><td><code>UptPortalAccessStack</code></td><td><code>infra/lib/access-stack.ts</code></td><td>The <code>upt-portal-app</code> IAM user and its permissions.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Four things to know</h3>
+      <ol>
+        <li><strong>The bucket and table are set to be retained.</strong> Deleting a stack leaves them, and their contents, in place. This is deliberate protection against an accidental teardown.</li>
+        <li><strong>Names are fixed in code.</strong> The table and bucket are named explicitly so that a CDK version upgrade can never trigger a replacement, which would silently drop all data.</li>
+        <li><strong>The access stack refers to the table and bucket by name</strong>, not by cross-stack reference. Deploy it after the other two exist. <code>cdk deploy --all</code> handles the order.</li>
+        <li><strong>No access key is created by CDK.</strong> If it were, the secret would end up in CloudFormation state. It is created by hand once, after deployment, and stored in the application's environment.</li>
+      </ol>
+
+      <h3>Tests</h3>
+      <p>
+        <code>infra/test/</code> contains 13 assertion tests covering the security-relevant settings: public
+        access blocked, encryption and versioning on, retention policies, the table's keys, index, expiry and
+        backups, the application user's permissions (including that it has no delete on the bucket), and that
+        no access key is created. Run them with <code>npm test</code> in <code>infra/</code>, and before every
+        infrastructure deployment.
+      </p>
+    </section>
+
+    <!-- ============ 6 ============ -->
+    <section id="s6">
+      <div class="sec-head">
+        <span class="sec-num">SECTION 06</span>
+        <h2 class="sec-title">Deployment and release</h2>
+      </div>
+
+      <p>
+        There are two independent deployment paths. Application changes and infrastructure changes are
+        deployed separately, and most releases only involve the application.
+      </p>
+
+      <h3>Application: push to GitHub, Vercel builds and deploys</h3>
+      <div class="note">
+        <span class="note-label">Confirm before relying on this</span>
+        <p>
+          The repository and configuration make clear the application is hosted on Vercel and deployed from
+          Git. <span class="chip tbc">To confirm</span> the Vercel account or team that owns the project, the
+          project name, the production domain, and which branch is set as production (assumed to be
+          <code>main</code>).
+        </p>
+      </div>
+
+      <h4>Prerequisites</h4>
+      <ul>
+        <li>Write access to <code>github.com/union-of-pinnacle-portal/upt-portal</code>.</li>
+        <li>Node.js and npm installed locally.</li>
+        <li>Access to the Vercel project to view build logs and environment variables.</li>
+      </ul>
+
+      <h4>Steps</h4>
+      <ol class="steps">
+        <li>
+          <div>Work on a branch, never directly on <code>main</code>.</div>
+          <pre><code>git checkout -b feat/short-description</code></pre>
+        </li>
+        <li>
+          <div>Check the build passes locally before pushing. This is the only gate that exists, so do not skip it.</div>
+          <pre><code>cd app
+npm install     <span class="cmt"># first time, or after dependency changes</span>
+npm run lint
+npm run build</code></pre>
+        </li>
+        <li>
+          <div>Test the change against the real data stores by running the app locally. This uses the same AWS table and bucket as production, so avoid creating test documents you will not clean up.</div>
+          <pre><code>npm run dev     <span class="cmt"># http://localhost:3000</span></code></pre>
+        </li>
+        <li>
+          <div>Push the branch and open a pull request. Vercel builds a preview deployment for it, with its own temporary URL. Check the change there.</div>
+          <pre><code>git push -u origin feat/short-description</code></pre>
+        </li>
+        <li>
+          <div>Merge the pull request into <code>main</code>. Vercel builds and deploys production automatically.</div>
+        </li>
+        <li>
+          <div>Verify the deployment.</div>
+          <div class="outcome">
+            <b>Expected result:</b> the Vercel dashboard shows the deployment as Ready; loading the portal
+            signs you in as normal; the dashboard lists documents without an error banner; opening one
+            document downloads or renders it.
+          </div>
+        </li>
+      </ol>
+
+      <h4>If a deployment goes wrong</h4>
+      <p>
+        In the Vercel dashboard, open Deployments, find the last known good one, and use "Promote to
+        Production" (older Vercel versions call this Rollback). This takes effect in seconds and does not
+        require a code change. Then fix the problem properly on a branch.
+      </p>
+
+      <h3>Infrastructure: deploy from a developer's machine</h3>
+      <p>
+        There is no automation for this. Infrastructure changes are rare and are deployed by hand from the
+        <code>infra/</code> folder using the <code>upt-portal</code> AWS profile.
+      </p>
+
+      <ol class="steps">
+        <li>
+          <div>Make sure your AWS profile works and points at the right account.</div>
+          <pre><code>aws sts get-caller-identity --profile upt-portal</code></pre>
+          <div class="outcome"><b>Expected result:</b> account <code>444655872449</code>, user <code>upt-admin</code>.</div>
+        </li>
+        <li>
+          <div>Install dependencies and run the infrastructure tests.</div>
+          <pre><code>cd infra
+npm install
+npm test</code></pre>
+        </li>
+        <li>
+          <div>Review exactly what will change. Read this output carefully. Anything that says "destroy" or "replace" on the table or bucket must be stopped and investigated.</div>
+          <pre><code>AWS_PROFILE=upt-portal npx cdk diff --all</code></pre>
+        </li>
+        <li>
+          <div>Deploy.</div>
+          <pre><code>AWS_PROFILE=upt-portal npx cdk deploy --all</code></pre>
+        </li>
+        <li>
+          <div>Verify.</div>
+          <div class="outcome">
+            <b>Expected result:</b> CDK reports each stack as deployed with no errors, and the portal still
+            lists and opens documents.
+          </div>
+        </li>
+      </ol>
+
+      <div class="note danger">
+        <span class="note-label">Never do this</span>
+        <p>
+          Do not run <code>cdk destroy</code>. The bucket and table are set to be retained so the data would
+          survive, but the application's IAM user would be deleted and the portal would immediately lose all
+          access to its data.
+        </p>
+      </div>
+
+      <h3>One-time setup, for reference</h3>
+      <p>These steps have already been done. They are recorded here in case the portal is ever rebuilt.</p>
+      <pre><code><span class="cmt"># Once per AWS account and region</span>
+AWS_PROFILE=upt-portal npx cdk bootstrap
+
+<span class="cmt"># After the first deploy: create the application's access key.</span>
+<span class="cmt"># The secret is shown only once. Put it straight into Vercel's environment variables.</span>
+aws iam create-access-key --user-name upt-portal-app --profile upt-portal</code></pre>
+    </section>
+
+    <!-- ============ 7 ============ -->
+    <section id="s7">
+      <div class="sec-head">
+        <span class="sec-num">SECTION 07</span>
+        <h2 class="sec-title">Day-to-day operations</h2>
+      </div>
+
+      <p>
+        These are the tasks the UPT team will actually do. Each one says who can do it, where, and what you
+        should see when it has worked. None of them require a developer.
+      </p>
+
+      <div class="runbook">
+        <h3>7.1 Give a new person access to the portal</h3>
+        <div class="runbook-meta"><span class="chip">Anyone can register</span><span class="chip">Role set by rank 3+</span></div>
+        <p>New members create their own account. An administrator then sets what they can see.</p>
+        <ol class="steps">
+          <li>Send them the portal address and ask them to choose <strong>Register</strong>, or to sign in with Google.</li>
+          <li>They receive a verification email and must click the link in it. <strong>They cannot sign in until they do.</strong> If it does not arrive, see <a href="#s8">section 8</a>.</li>
+          <li>Once they have signed in at least once, open the account menu (the circle with initials, top right) and choose <strong>Manage members</strong>.</li>
+          <li>Find their email in the list and set their role. New accounts start as General Member.</li>
+          <li>If they need to add or edit documents, add them to a committee room as well (7.4).</li>
+          <li>
+            Tell them to sign out and back in.
+            <div class="outcome"><b>Expected result:</b> after signing back in, the account menu shows their new role, and they can see the documents for that level.</div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="runbook">
+        <h3>7.2 Change someone's role</h3>
+        <div class="runbook-meta"><span class="chip">Committee Chair and above</span><span class="chip">/admin/users</span></div>
+        <ol class="steps">
+          <li>Account menu, top right, then <strong>Manage members</strong>.</li>
+          <li>Find the person and pick the new role. Chairs see only members of their own rooms; Super Users see everyone.</li>
+          <li>
+            Ask them to sign out and sign back in.
+            <div class="outcome"><b>Expected result:</b> the list shows the new role immediately. What the member can actually see changes only after they sign in again.</div>
+          </li>
+        </ol>
+        <p>You cannot promote anyone above your own level, and a Super User's role can only be changed by that Super User.</p>
+      </div>
+
+      <div class="runbook">
+        <h3>7.3 Create a committee room</h3>
+        <div class="runbook-meta"><span class="chip">Super User only</span><span class="chip">/rooms</span></div>
+        <ol class="steps">
+          <li>Go to <strong>Committee rooms</strong> from the dashboard header.</li>
+          <li>Choose <strong>Create room</strong>, give it a name (up to 100 characters) and an optional description.</li>
+          <li>
+            Add the committee's members (7.4).
+            <div class="outcome"><b>Expected result:</b> the room appears in the list with a member count, and it becomes selectable in the "Add document" form for its members.</div>
+          </li>
+        </ol>
+        <p>Remember that a room does not hide anything. It decides who can add and edit, not who can read.</p>
+      </div>
+
+      <div class="runbook">
+        <h3>7.4 Add or remove someone in a committee room</h3>
+        <div class="runbook-meta"><span class="chip">Chair of that room, or any Super User</span></div>
+        <ol class="steps">
+          <li>Open <strong>Committee rooms</strong> and click into the room.</li>
+          <li>Enter the person's email address to add them, or use the remove control next to an existing member.</li>
+          <li>
+            The email must already have a portal account. If it does not, you will see "No portal account
+            exists with that email". Ask them to register first (7.1).
+            <div class="outcome"><b>Expected result:</b> the person appears in the room's member list and can immediately add documents to that room, without signing out and in.</div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="runbook">
+        <h3>7.5 Add a document</h3>
+        <div class="runbook-meta"><span class="chip">Room members, rank 3+ in the current interface</span></div>
+        <p>Two kinds. Upload a file when you have an existing document. Create a page when you are writing something new that people may edit later.</p>
+        <ol class="steps">
+          <li>On the dashboard, choose <strong>Add document</strong>, then either <strong>Upload file</strong> or <strong>Create page</strong>.</li>
+          <li>Fill in the title, an optional description, and one or more categories. You can type a new category name and create it on the spot.</li>
+          <li>Choose the <strong>committee room</strong>. Super Users may leave it unfiled.</li>
+          <li>
+            Choose <strong>who can view</strong>. This is the access level and it is the only thing that
+            restricts visibility:
+            <ul>
+              <li>All members (general and up)</li>
+              <li>Committee members and up</li>
+              <li>Committee chairs and up</li>
+              <li>Super users only</li>
+            </ul>
+          </li>
+          <li>Choose <strong>draft</strong> or <strong>published</strong>. Drafts are visible only to people who can manage the room.</li>
+          <li>
+            Save.
+            <div class="outcome"><b>Expected result:</b> the document appears at the top of the dashboard list. Uploaded files download when clicked; pages open in the editor.</div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="runbook">
+        <h3>7.6 Publish, unpublish or archive a document</h3>
+        <div class="runbook-meta"><span class="chip">Write access to the document's room</span></div>
+        <ol class="steps">
+          <li>Find the document on the dashboard and open its actions menu, or open the document and choose <strong>Edit details</strong>.</li>
+          <li>
+            Change the status:
+            <ul>
+              <li><strong>Published</strong> makes it visible to everyone at or above its access level.</li>
+              <li><strong>Draft</strong> hides it from ordinary members while you work on it.</li>
+              <li><strong>Archived</strong> retires it. It stays in the system and stays visible to room managers, but ordinary members no longer see it.</li>
+            </ul>
+          </li>
+          <li>
+            Save.
+            <div class="outcome"><b>Expected result:</b> the status shown on the dashboard row changes, and the document disappears from ordinary members' lists if you moved it out of Published.</div>
+          </li>
+        </ol>
+        <p><strong>Archive is the right tool for anything that is a real record.</strong> It is reversible. Deleting is not.</p>
+      </div>
+
+      <div class="runbook">
+        <h3>7.7 Replace a file with a newer version</h3>
+        <div class="runbook-meta"><span class="chip">Write access to the document's room</span></div>
+        <ol class="steps">
+          <li>Open the document's actions and choose to replace the file.</li>
+          <li>Pick the new file. It uploads directly and becomes the current version.</li>
+          <li>
+            Check the version history.
+            <div class="outcome"><b>Expected result:</b> the new version is listed at the top with your name and the time, and every earlier version is still listed and still downloadable. Nothing is overwritten.</div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="runbook">
+        <h3>7.8 Turn an uploaded Word document into an editable page</h3>
+        <div class="runbook-meta"><span class="chip">Write access to the document's room</span></div>
+        <p>Useful when a <code>.docx</code> needs to become something people maintain in the portal instead of by emailing files around.</p>
+        <ol class="steps">
+          <li>Open the document and choose the convert action.</li>
+          <li>The conversion happens in your browser and is saved as a new version.</li>
+          <li>
+            Check the result. Complex formatting (tables, columns, embedded images) may not survive cleanly.
+            <div class="outcome"><b>Expected result:</b> the document now opens in the editor. The original Word file is still in the version history and can still be downloaded, so a poor conversion is recoverable.</div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="runbook">
+        <h3>7.9 Permanently delete a document</h3>
+        <div class="runbook-meta"><span class="chip gap">Super User only</span><span class="chip gap">Not reversible</span></div>
+        <div class="note danger">
+          <span class="note-label">Use archive instead, unless this is junk</span>
+          <p>
+            Delete removes the document record and its entire version history. There is no undo in the
+            portal. It exists for test uploads, wrong files and duplicates. For anything that is a real
+            union record, archive it.
+          </p>
+        </div>
+        <ol class="steps">
+          <li>Open the document's actions menu and choose Delete.</li>
+          <li>
+            Confirm.
+            <div class="outcome"><b>Expected result:</b> the document disappears from every list. The underlying file remains in S3 but is unreachable through the portal, and a developer can recover it from the bucket if you act quickly and know the document's id.</div>
+          </li>
+        </ol>
+      </div>
+
+      <div class="runbook">
+        <h3>7.10 Create the first Super User (or recover when there is none)</h3>
+        <div class="runbook-meta"><span class="chip">Needs the admin code, or developer access</span></div>
+        <p>There are two ways. The first needs no developer.</p>
+        <h4>Using the admin code at registration</h4>
+        <ol class="steps">
+          <li>On the registration page, enter the admin code in the optional field alongside the email and password. The code is the <code>ADMIN_BOOTSTRAP_SECRET</code> value set in the Vercel environment.</li>
+          <li>Complete registration and verify the email address.</li>
+          <li>
+            Sign in.
+            <div class="outcome"><b>Expected result:</b> the account menu shows "Super User" and the Committee rooms and Manage members options are available.</div>
+          </li>
+        </ol>
+        <div class="note caution">
+          <span class="note-label">Treat this code like a password</span>
+          <p>
+            Anyone who has it can make themselves an administrator. Share it only when creating an
+            administrator, and change it in Vercel afterwards if it has been circulated.
+          </p>
+        </div>
+        <h4>Using the command line (developer)</h4>
+        <pre><code>cd app
+npm run set-role -- someone@example.com committee_head</code></pre>
+        <p>
+          This requires <code>app/.env.local</code> to be set up with the SuperTokens connection details.
+          Use the stored role names: <code>general</code>, <code>contributor</code>,
+          <code>committee_chair</code>, <code>committee_head</code>. The person must sign out and back in.
+        </p>
+      </div>
+
+      <div class="runbook">
+        <h3>7.11 Two maintenance scripts you may need</h3>
+        <div class="runbook-meta"><span class="chip gap">Developer, and see the caveat</span></div>
+        <div class="note caution">
+          <span class="note-label">These are not wired up</span>
+          <p>
+            Both scripts exist in <code>app/scripts/</code> and their documentation refers to
+            <code>npm run seed-categories</code> and <code>npm run migrate-minrank</code>, but neither entry
+            exists in <code>app/package.json</code>. Until someone adds them, run them directly:
+          </p>
+          <pre><code>cd app
+node --env-file=.env.local scripts/seed-categories.js            <span class="cmt"># dry run</span>
+node --env-file=.env.local scripts/seed-categories.js --apply
+
+node --env-file=.env.local scripts/migrate-minrank-3-to-4.js     <span class="cmt"># dry run</span>
+node --env-file=.env.local scripts/migrate-minrank-3-to-4.js --apply</code></pre>
+        </div>
+        <ul>
+          <li><strong>seed-categories</strong> fills the category list with a starting set, and registers any category names already used on old documents. Both scripts report what they would do before you pass <code>--apply</code>, and are safe to run more than once.</li>
+          <li><strong>migrate-minrank-3-to-4</strong> fixes an access level that shifted meaning when Committee Chair was added. Documents saved as level 3 used to mean "Super Users only" and now mean "Chairs and up". <strong>Run this before appointing the first Committee Chair.</strong> As of 9 August 2026 there are no documents at level 3, so it currently has nothing to do, but run the dry run to confirm that is still true.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ 8 ============ -->
+    <section id="s8">
+      <div class="sec-head">
+        <span class="sec-num">SECTION 08</span>
+        <h2 class="sec-title">Monitoring and troubleshooting</h2>
+      </div>
+
+      <div class="note caution">
+        <span class="note-label">Current state</span>
+        <p>
+          There is no monitoring configured. No CloudWatch alarms exist in the AWS account, no error tracking
+          service is connected, and nothing will notify anyone if the portal breaks. In practice you will find
+          out when a member reports it. Adding alarms is the highest-value operational improvement available
+          and is listed in <a href="#s11">section 11</a>.
+        </p>
+      </div>
+
+      <h3>Where to look</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Question</th><th>Where</th><th>What you get</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Is the site up? Did the last deploy work? Are there server errors?</td>
+              <td>Vercel dashboard, Deployments and Logs</td>
+              <td>Build output, runtime logs including any error thrown by an API route. This is the first place to look for almost everything.</td>
+            </tr>
+            <tr>
+              <td>Can people sign in? Does an account exist?</td>
+              <td>SuperTokens dashboard <span class="chip tbc">URL to confirm</span></td>
+              <td>The user list, sign-in methods, and whether an email is verified.</td>
+            </tr>
+            <tr>
+              <td>Is a document record correct?</td>
+              <td>AWS console, DynamoDB, table <code>upt-portal</code>, Explore items</td>
+              <td>The raw records. Read them freely; edit them only as a last resort.</td>
+            </tr>
+            <tr>
+              <td>Is a file actually stored?</td>
+              <td>AWS console, S3, bucket <code>upt-portal-documents</code></td>
+              <td>Objects under <code>documents/&lt;document id&gt;/</code> and <code>pages/&lt;document id&gt;/</code>.</td>
+            </tr>
+            <tr>
+              <td>Is AWS itself throttling or erroring?</td>
+              <td>AWS console, CloudWatch, Metrics, DynamoDB and S3</td>
+              <td>Request counts, throttled requests, error rates. On-demand billing makes throttling unlikely at this size.</td>
+            </tr>
+            <tr>
+              <td>What changed recently?</td>
+              <td>GitHub commit history on <code>main</code></td>
+              <td>Correlate a new problem with the deployment that introduced it.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Common problems</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Symptom</th><th>Most likely cause</th><th>What to do</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>"I registered but I cannot sign in"</td>
+              <td>Email address not verified. Verification is required.</td>
+              <td>Ask them to check spam and junk for a mail from the portal. They can trigger a new one from the verify-email page. If nothing arrives, see the email row below.</td>
+            </tr>
+            <tr>
+              <td>No emails arriving at all (verification, password reset)</td>
+              <td>The Gmail app password has been revoked or the sending account has a problem. All portal email goes through one Gmail account over SMTP.</td>
+              <td>Check the Vercel logs for SMTP errors. Confirm the app password is still valid in the Google account's security settings, and update <code>GMAIL_APP_PASSWORD</code> in Vercel if it was regenerated. Redeploy after changing it.</td>
+            </tr>
+            <tr>
+              <td>"I was made a Chair but nothing changed"</td>
+              <td>The role is copied into the session at sign-in.</td>
+              <td>Sign out fully and sign back in. Confirm the role in the account menu.</td>
+            </tr>
+            <tr>
+              <td>"I cannot add a document to a room"</td>
+              <td>Not a member of that room, or the interface only offers the button to rank 3 and above.</td>
+              <td>Add them to the room (7.4). If they are a Committee Member and still see no Add button, this is the known interface limit in <a href="#s12">section 12</a>.</td>
+            </tr>
+            <tr>
+              <td>A document link gives "not found" for one person but works for another</td>
+              <td>Working as designed. Their rank is below the document's access level, or the document is a draft or archived and they cannot manage its room.</td>
+              <td>Check the document's "who can view" setting and status. Raise their role or lower the document's level if appropriate.</td>
+            </tr>
+            <tr>
+              <td>Upload fails part way, or the file never appears</td>
+              <td>The signed upload link expired (5 minutes), the connection dropped, or the browser tab was closed between uploading and saving.</td>
+              <td>Try again. Large files over slow connections are the usual cause. If it repeats, check the browser console and Vercel logs for the exact error.</td>
+            </tr>
+            <tr>
+              <td>"Someone else is editing this document"</td>
+              <td>Another person holds the advisory edit lease, or held it within the last two minutes.</td>
+              <td>Wait two minutes and reload. The lease expires on its own; nobody can be permanently locked out.</td>
+            </tr>
+            <tr>
+              <td>"This document changed while you were editing it"</td>
+              <td>Someone saved a newer version after you opened yours. The save was refused rather than overwriting them.</td>
+              <td>Copy your text out of the editor first, then reload the page and reapply your changes. Your text stays in the editor until you leave the page.</td>
+            </tr>
+            <tr>
+              <td>The dashboard shows an error banner instead of documents</td>
+              <td>DynamoDB is unreachable: expired or deleted AWS key, wrong region, or an AWS incident.</td>
+              <td>Check the Vercel logs for the AWS error. Confirm the <code>upt-portal-app</code> access key is still Active in IAM and that the four AWS environment variables in Vercel are correct.</td>
+            </tr>
+            <tr>
+              <td>The category picker is empty</td>
+              <td>No categories have been created yet.</td>
+              <td>Anyone who can upload can type a new category name and create it inline, or run the seeding script (7.11).</td>
+            </tr>
+            <tr>
+              <td>A document's room shows as "Unknown room"</td>
+              <td>The room record no longer exists but the document still points at it.</td>
+              <td>The document is still readable. Only a Super User can edit it. Recreating a room does not restore the link, because rooms are identified by a generated id.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>When something is broken and you do not know why</h3>
+      <ol class="steps">
+        <li>Establish the blast radius. Is it one member, one document, or everybody? One person usually means permissions or session; everybody usually means a deployment or a service.</li>
+        <li>Open the Vercel dashboard. Check whether the most recent deployment succeeded and look at the runtime logs for errors around the time of the report.</li>
+        <li>If the last deployment is the suspect, promote the previous good deployment back to production (<a href="#s6">section 6</a>). Restoring service comes before diagnosis.</li>
+        <li>If sign-in is failing for everyone, check SuperTokens. If documents are failing for everyone, check the AWS key and the AWS status page.</li>
+        <li>Write down what you found. This document should grow a new row in the table above each time.</li>
+      </ol>
+    </section>
+
+    <!-- ============ 9 ============ -->
+    <section id="s9">
+      <div class="sec-head">
+        <span class="sec-num">SECTION 09</span>
+        <h2 class="sec-title">Configuration and secrets</h2>
+      </div>
+
+      <p>
+        All configuration is environment variables. There is no configuration file to edit and no settings
+        screen in the portal.
+      </p>
+
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Variable</th><th>What it is</th><th>Sensitive</th><th>Comes from</th></tr></thead>
+          <tbody>
+            <tr><td><code>AWS_ACCESS_KEY_ID</code></td><td>Identifies the application to AWS</td><td>Yes</td><td><code>aws iam create-access-key --user-name upt-portal-app</code></td></tr>
+            <tr><td><code>AWS_SECRET_ACCESS_KEY</code></td><td>The matching secret</td><td>Yes</td><td>Same command. Shown once only.</td></tr>
+            <tr><td><code>AWS_REGION</code></td><td>Region of the table and bucket</td><td>No</td><td><code>us-east-1</code></td></tr>
+            <tr><td><code>PORTAL_TABLE_NAME</code></td><td>DynamoDB table name</td><td>No</td><td><code>upt-portal</code>. Defaults to this if unset.</td></tr>
+            <tr><td><code>PORTAL_DOCUMENTS_BUCKET</code></td><td>S3 bucket name</td><td>No</td><td><code>upt-portal-documents</code>. Defaults to this if unset.</td></tr>
+            <tr><td><code>SUPERTOKENS_CONNECTION_URI</code></td><td>Address of the SuperTokens service</td><td>Treat as sensitive</td><td>SuperTokens dashboard. Currently a managed instance on <code>aws.supertokens.io</code>.</td></tr>
+            <tr><td><code>SUPERTOKENS_API_KEY</code></td><td>Authenticates the app to SuperTokens</td><td>Yes</td><td>SuperTokens dashboard</td></tr>
+            <tr><td><code>GOOGLE_CLIENT_ID</code></td><td>Google sign-in application id</td><td>No</td><td>Google Cloud console, OAuth credentials</td></tr>
+            <tr><td><code>GOOGLE_CLIENT_SECRET</code></td><td>Google sign-in secret</td><td>Yes</td><td>Google Cloud console</td></tr>
+            <tr><td><code>NEXT_PUBLIC_APP_URL</code></td><td>The portal's own address, used to build links in emails and OAuth redirects</td><td>No</td><td>The production domain. Falls back to the Vercel-provided URL, then localhost.</td></tr>
+            <tr><td><code>ADMIN_BOOTSTRAP_SECRET</code></td><td>The admin code that promotes a new registration to Super User</td><td>Yes</td><td>Chosen by the team. Change it if it has circulated.</td></tr>
+            <tr><td><code>GMAIL_USER</code></td><td>The Gmail address portal email is sent from</td><td>No</td><td>Currently a personal <code>@gmail.com</code> account. See <a href="#s12">section 12</a>.</td></tr>
+            <tr><td><code>GMAIL_APP_PASSWORD</code></td><td>Google app password for SMTP</td><td>Yes</td><td>Google account security settings, App passwords</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Where these are set</h3>
+      <ul>
+        <li><strong>Production:</strong> Vercel, in Project Settings, Environment Variables. Changing one requires a redeploy before it takes effect.</li>
+        <li><strong>Local development:</strong> <code>app/.env.local</code>, which is ignored by Git and must never be committed. It currently holds a working copy of every variable above.</li>
+      </ul>
+
+      <h3>Rules</h3>
+      <ul>
+        <li>Never commit a secret. The <code>.gitignore</code> covers <code>.env</code> and <code>.env*.local</code>; do not work around it.</li>
+        <li>Never paste secrets into chat, tickets or shared documents. Use a password manager the team shares.</li>
+        <li>Local development points at the <strong>live</strong> table and bucket. There is no separate development data. Be careful what you create and delete while testing.</li>
+        <li>When someone leaves the team, rotate anything they had: the AWS key, the SuperTokens key, the admin code, and the Gmail app password.</li>
+      </ul>
+
+      <div class="note">
+        <span class="note-label">Missing</span>
+        <p>
+          <span class="chip tbc">To confirm</span> Where the team stores shared credentials today. If there is
+          no password manager, setting one up should happen alongside this handover, because several of these
+          values currently exist only on one developer's machine and in Vercel.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ 10 ============ -->
+    <section id="s10">
+      <div class="sec-head">
+        <span class="sec-num">SECTION 10</span>
+        <h2 class="sec-title">Access and permissions</h2>
+      </div>
+
+      <h3>Accounts the team needs</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>System</th><th>Used for</th><th>Who needs it</th><th>Managed where</th></tr></thead>
+          <tbody>
+            <tr><td>The portal itself</td><td>All day-to-day member and document tasks</td><td>Everyone. Administrators need Super User.</td><td><code>/admin/users</code> in the portal</td></tr>
+            <tr><td>GitHub</td><td>Code, pull requests, history</td><td>Anyone changing the code</td><td>The <code>union-of-pinnacle-portal</code> organisation</td></tr>
+            <tr><td>Vercel</td><td>Deployments, logs, environment variables</td><td>Anyone deploying or diagnosing</td><td>Vercel team settings <span class="chip tbc">To confirm</span></td></tr>
+            <tr><td>AWS</td><td>Data, files, infrastructure</td><td>Developers only</td><td>IAM in account 444655872449</td></tr>
+            <tr><td>SuperTokens</td><td>Accounts, sign-in problems</td><td>Developers, and whoever supports sign-in issues</td><td>SuperTokens dashboard <span class="chip tbc">To confirm</span></td></tr>
+            <tr><td>Google Cloud</td><td>The Google sign-in credentials</td><td>Rarely needed</td><td>Google Cloud console <span class="chip tbc">To confirm which project and owner</span></td></tr>
+            <tr><td>The sending Gmail account</td><td>Portal email delivery</td><td>Whoever holds the app password</td><td>Google account settings</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>What access each task needs</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Task</th><th>Minimum access</th></tr></thead>
+          <tbody>
+            <tr><td>Upload, edit, publish, archive documents</td><td>Portal account, in the right room</td></tr>
+            <tr><td>Manage room rosters</td><td>Portal Committee Chair in that room</td></tr>
+            <tr><td>Change roles, create rooms, delete documents</td><td>Portal Super User</td></tr>
+            <tr><td>Deploy an application change</td><td>GitHub write access; Vercel access to verify</td></tr>
+            <tr><td>Roll back a bad deployment</td><td>Vercel project access</td></tr>
+            <tr><td>Read logs while diagnosing</td><td>Vercel project access</td></tr>
+            <tr><td>Change or rotate a secret</td><td>Vercel project access, plus access to the source system</td></tr>
+            <tr><td>Deploy infrastructure, rotate the AWS key, restore a backup</td><td>AWS credentials with administrator access (currently the <code>upt-admin</code> user)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note caution">
+        <span class="note-label">A gap worth closing</span>
+        <p>
+          AWS administrator access is a single IAM user with a long-lived access key, shared by whoever
+          deploys. Ideally each person would have their own IAM user with multi-factor authentication, and
+          the shared key would be retired. This matters more as soon as more than one person can deploy.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ 11 ============ -->
+    <section id="s11">
+      <div class="sec-head">
+        <span class="sec-num">SECTION 11</span>
+        <h2 class="sec-title">Maintenance</h2>
+      </div>
+
+      <h3>Recurring tasks</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Task</th><th>How often</th><th>Who</th><th>What it involves</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Review member list and roles</td><td>Quarterly</td><td>Super User</td>
+              <td>Open <code>/admin/users</code>. Demote or remove people who have left the union. There is no delete-account function in the portal; removing an account entirely needs the SuperTokens dashboard.</td>
+            </tr>
+            <tr>
+              <td>Review committee room rosters</td><td>Quarterly, and when a committee changes</td><td>Chairs</td>
+              <td>Open each room and check the members are still the right people.</td>
+            </tr>
+            <tr>
+              <td>Rotate the application AWS key</td><td>Every 6 to 12 months, and immediately when someone leaves</td><td>Developer</td>
+              <td>Procedure below. The current key was created 11 July 2026.</td>
+            </tr>
+            <tr>
+              <td>Rotate the SuperTokens API key and the admin code</td><td>Every 12 months, and when someone leaves</td><td>Developer</td>
+              <td>Generate a new value, update it in Vercel, redeploy.</td>
+            </tr>
+            <tr>
+              <td>Check the Gmail app password still works</td><td>Whenever email problems are reported</td><td>Developer</td>
+              <td>Google revokes app passwords when account security changes. A failure is silent until someone cannot register.</td>
+            </tr>
+            <tr>
+              <td>Update dependencies</td><td>Quarterly, plus any urgent security advisory</td><td>Developer</td>
+              <td><code>npm audit</code> and <code>npm outdated</code> in both <code>app/</code> and <code>infra/</code>. Update, build, test, deploy through a pull request. Next.js and the AWS SDK move quickly.</td>
+            </tr>
+            <tr>
+              <td>Update the CDK version</td><td>Annually</td><td>Developer</td>
+              <td>Bump <code>aws-cdk</code> and <code>aws-cdk-lib</code>, run <code>npm test</code>, then <code>cdk diff --all</code> and read it carefully before deploying.</td>
+            </tr>
+            <tr>
+              <td>Confirm backups are working</td><td>Every 6 months</td><td>Developer</td>
+              <td>Check that point-in-time recovery is still enabled on the table and versioning is still on for the bucket. See below.</td>
+            </tr>
+            <tr>
+              <td>Clean up orphaned files</td><td>Annually, or if storage grows unexpectedly</td><td>Developer</td>
+              <td>Abandoned uploads and files from deleted documents accumulate in S3. There is no automatic cleanup and the application cannot delete objects, so this is a manual job with administrator credentials.</td>
+            </tr>
+            <tr>
+              <td>Update this document</td><td>Whenever a procedure or a system changes</td><td>Whoever made the change</td>
+              <td>The source is <code>docs/handoff.html</code> in the repository.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Rotating the application's AWS key</h3>
+      <p>Do this in order. Done this way there is no downtime, because both keys are valid in the middle.</p>
+      <ol class="steps">
+        <li>
+          Create a second key for the same user.
+          <pre><code>aws iam create-access-key --user-name upt-portal-app --profile upt-portal</code></pre>
+          <div class="outcome"><b>Expected result:</b> a new key id and secret, shown once. Copy both immediately.</div>
+        </li>
+        <li>Update <code>AWS_ACCESS_KEY_ID</code> and <code>AWS_SECRET_ACCESS_KEY</code> in Vercel's environment variables.</li>
+        <li>Redeploy the application so the new values are picked up.</li>
+        <li>
+          Confirm the portal still lists and downloads documents.
+          <div class="outcome"><b>Expected result:</b> the dashboard loads with no error banner and a document opens.</div>
+        </li>
+        <li>
+          Only then, delete the old key.
+          <pre><code>aws iam list-access-keys --user-name upt-portal-app --profile upt-portal
+aws iam delete-access-key --user-name upt-portal-app --access-key-id &lt;OLD_KEY_ID&gt; --profile upt-portal</code></pre>
+        </li>
+        <li>Update <code>app/.env.local</code> on any developer machine that uses the old key.</li>
+      </ol>
+
+      <h3>Backups and recovery</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Data</th><th>Protection</th><th>Recovery window</th><th>How to recover</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Document records, rooms, memberships, categories (DynamoDB)</td>
+              <td>Point-in-time recovery, enabled</td>
+              <td>35 days</td>
+              <td>Restore to a <em>new</em> table from the AWS console, inspect it, then copy back what you need. Never restore over the live table.</td>
+            </tr>
+            <tr>
+              <td>Document files (S3)</td>
+              <td>Bucket versioning, enabled</td>
+              <td>Indefinite. There is no lifecycle rule deleting old versions.</td>
+              <td>In the S3 console, show versions on the object and restore or download the previous one.</td>
+            </tr>
+            <tr>
+              <td>Member accounts and passwords</td>
+              <td>Whatever the SuperTokens managed service provides</td>
+              <td><span class="chip tbc">To confirm</span></td>
+              <td><span class="chip tbc">To confirm</span> the backup and restore commitments of the SuperTokens plan in use. This is the one dataset with no backup under UPT's own control.</td>
+            </tr>
+            <tr>
+              <td>Application code</td>
+              <td>GitHub, plus every developer's clone</td>
+              <td>Full history</td>
+              <td>Standard Git.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Note that recovering an accidentally deleted document usually does not need a restore. The file
+        itself is still in S3; only the record was removed. A developer who knows the document's id can find
+        the objects under <code>documents/&lt;id&gt;/</code> and download them.
+      </p>
+
+      <h3>Improvements worth scheduling</h3>
+      <ul>
+        <li>Add CloudWatch alarms for DynamoDB and S3 errors, with an email notification to a shared address.</li>
+        <li>Connect an error tracking service so that failures in the application are reported rather than sitting in logs.</li>
+        <li>Add a GitHub Actions workflow that runs the build, the linter and the infrastructure tests on every pull request.</li>
+        <li>Move email sending off a personal Gmail account onto a proper sending service or a union-owned mailbox.</li>
+      </ul>
+    </section>
+
+    <!-- ============ 12 ============ -->
+    <section id="s12">
+      <div class="sec-head">
+        <span class="sec-num">SECTION 12</span>
+        <h2 class="sec-title">Known limitations and considerations</h2>
+      </div>
+
+      <p>These are real and current. None of them are blocking day-to-day use, but each is worth knowing before it surprises someone.</p>
+
+      <h3>Security and access</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Issue</th><th>Impact</th><th>Suggested response</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>The admin code endpoint is unauthenticated. <code>/api/auth/set-admin-role</code> accepts a user id and the bootstrap code, with no sign-in required and no rate limiting.</td>
+              <td>Anyone who learns the code can promote an account to Super User. Repeated guessing is not blocked.</td>
+              <td>Treat the code as a high-value secret, change it after each use, and consider removing the endpoint once the administrators exist.</td>
+            </tr>
+            <tr>
+              <td>Role changes are limited by rank but not by room. A Committee Chair can change the role of any member below rank 3, not only members of their own rooms.</td>
+              <td>A Chair can promote someone outside their committee to Committee Member. The member list they see is room-scoped, so this needs a deliberate direct API call rather than a click.</td>
+              <td>Scope the role change endpoint by room membership for Chairs.</td>
+            </tr>
+            <tr>
+              <td>One shared AWS administrator user with a long-lived access key.</td>
+              <td>No individual accountability, and rotation affects everyone at once.</td>
+              <td>Individual IAM users with multi-factor authentication.</td>
+            </tr>
+            <tr>
+              <td>Portal email is sent from a personal Gmail account using an app password.</td>
+              <td>Sign-up and password reset stop working if that account changes its security settings or is lost. Gmail also has daily sending limits.</td>
+              <td>Move to a union-owned account or an email sending service.</td>
+            </tr>
+            <tr>
+              <td>The route middleware only checks for a cookie, only on <code>/dashboard</code>.</td>
+              <td>No impact today, because every page and route enforces permissions itself. The risk is a future route that assumes middleware is protecting it.</td>
+              <td>Keep calling <code>getCurrentUser()</code> and the permission checks in every new route.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Functional gaps</h3>
+      <ul>
+        <li><strong>Committee Members cannot see the Add document button.</strong> The permission rules allow rank 2 to add documents in their rooms, but the dashboard only shows the button to rank 3 and above. Either the rule or the interface should change; today the effective answer is that Chairs and Super Users add documents.</li>
+        <li><strong>Rooms cannot be renamed or deleted</strong> through the portal. There is no endpoint for it.</li>
+        <li><strong>Documents cannot be moved between rooms.</strong> This was deliberate, but there is no Super User action to do it either, so a mis-filed document stays where it is.</li>
+        <li><strong>Categories cannot be renamed, merged or deleted.</strong> They accumulate. A cleanup tool would have to rewrite every tagged document.</li>
+        <li><strong>No account deletion in the portal.</strong> Removing a member entirely requires the SuperTokens dashboard.</li>
+        <li><strong>Download activity is recorded but never shown.</strong> The data model has download log records; no screen displays them and nothing writes them today.</li>
+        <li><strong>Word conversion is approximate.</strong> Tables, columns and embedded images may not survive. The original file is always kept in the version history.</li>
+      </ul>
+
+      <h3>Technical constraints</h3>
+      <ul>
+        <li><strong>The document list does not paginate.</strong> It queries one partition per access level and merges the results in memory. Correct and fast at 5 documents; it will need rework in the hundreds to low thousands.</li>
+        <li><strong>The member list is capped at 500</strong> accounts, and builds the list by fetching each member's role one at a time. It will get slow well before that cap.</li>
+        <li><strong>Deleted documents leave their files behind</strong> in S3, because the application has no delete permission on the bucket.</li>
+        <li><strong>Access level 3 changed meaning</strong> when Committee Chair was added. Run the migration script before appointing the first Chair (7.11). There are currently no documents at that level, so nothing is at risk today.</li>
+        <li><strong>The only automated tests are for infrastructure.</strong> There are 13 CDK assertion tests and no tests for the application, including none for the permission logic, which is the part most worth testing.</li>
+        <li><strong>No continuous integration.</strong> Nothing runs the build or the tests automatically. A broken build is caught by Vercel at deploy time; a broken permission rule is caught by a person.</li>
+        <li><strong>One environment.</strong> There is no staging. Local development runs against live data, and preview deployments do too.</li>
+      </ul>
+
+      <h3>Assumptions the design rests on</h3>
+      <ul>
+        <li>A small union: dozens of members, a handful of committees, hundreds of documents at most.</li>
+        <li>Members are trusted colleagues, not adversaries. The access levels stop accidental oversharing, not a determined attacker with an account.</li>
+        <li>Volunteers operate the portal, so a task that needs a developer is a task that may not get done. Anything routine should be doable through the interface.</li>
+      </ul>
+    </section>
+
+    <!-- ============ 13 ============ -->
+    <section id="s13">
+      <div class="sec-head">
+        <span class="sec-num">SECTION 13</span>
+        <h2 class="sec-title">Reference information</h2>
+      </div>
+
+      <h3>Where things are</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Resource</th><th>Location</th></tr></thead>
+          <tbody>
+            <tr><td>Code repository</td><td><a href="https://github.com/union-of-pinnacle-portal/upt-portal">github.com/union-of-pinnacle-portal/upt-portal</a>, branch <code>main</code></td></tr>
+            <tr><td>Production portal</td><td><span class="chip tbc">To confirm</span> the production domain</td></tr>
+            <tr><td>Vercel project</td><td><span class="chip tbc">To confirm</span> team and project name</td></tr>
+            <tr><td>SuperTokens dashboard</td><td><span class="chip tbc">To confirm</span>. Managed instance on <code>aws.supertokens.io</code>.</td></tr>
+            <tr><td>AWS console</td><td><a href="https://console.aws.amazon.com/">console.aws.amazon.com</a>, account 444655872449, region <code>us-east-1</code></td></tr>
+            <tr><td>DynamoDB table</td><td>DynamoDB, Tables, <code>upt-portal</code></td></tr>
+            <tr><td>S3 bucket</td><td>S3, Buckets, <code>upt-portal-documents</code></td></tr>
+            <tr><td>CloudFormation stacks</td><td>CloudFormation, stacks beginning <code>UptPortal</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Documentation in the repository</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>File</th><th>Covers</th></tr></thead>
+          <tbody>
+            <tr><td><code>README.md</code></td><td>Repository layout and the basic commands.</td></tr>
+            <tr><td><code>infra/README.md</code></td><td>The authoritative data model, every record type and field, and the reasoning behind the storage design. Read this before changing anything that touches data.</td></tr>
+            <tr><td><code>docs/handoff.html</code></td><td>This document.</td></tr>
+            <tr><td>Comments in <code>app/src/lib/</code></td><td>The permission rules and the reasoning behind them are documented at the top of each module. They are unusually detailed and are worth reading before changing that logic.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Commands worth keeping to hand</h3>
+      <pre><code><span class="cmt"># Application, from app/</span>
+npm install
+npm run dev            <span class="cmt"># local development at http://localhost:3000</span>
+npm run build          <span class="cmt"># check the production build before pushing</span>
+npm run lint
+npm run set-role -- someone@example.com committee_head
+
+<span class="cmt"># Infrastructure, from infra/</span>
+npm install
+npm test               <span class="cmt"># CDK assertion tests</span>
+AWS_PROFILE=upt-portal npx cdk diff --all
+AWS_PROFILE=upt-portal npx cdk deploy --all
+
+<span class="cmt"># AWS checks</span>
+aws sts get-caller-identity --profile upt-portal
+aws iam list-access-keys --user-name upt-portal-app --profile upt-portal
+aws dynamodb describe-table --table-name upt-portal --profile upt-portal --region us-east-1</code></pre>
+
+      <h3>External documentation</h3>
+      <ul>
+        <li><a href="https://nextjs.org/docs">Next.js App Router documentation</a></li>
+        <li><a href="https://supertokens.com/docs">SuperTokens documentation</a></li>
+        <li><a href="https://docs.aws.amazon.com/cdk/v2/guide/home.html">AWS CDK v2 developer guide</a></li>
+        <li><a href="https://vercel.com/docs">Vercel documentation</a></li>
+        <li><a href="https://lexical.dev/">Lexical editor documentation</a></li>
+      </ul>
+
+      <h3>Ticketing and runbooks</h3>
+      <p>
+        <span class="chip tbc">To confirm</span> There is no issue tracker, on-call rota or incident process
+        recorded. If the team adopts one, link it here.
+      </p>
+    </section>
+
+    <!-- ============ 14 ============ -->
+    <section id="s14">
+      <div class="sec-head">
+        <span class="sec-num">SECTION 14</span>
+        <h2 class="sec-title">Ownership and support</h2>
+      </div>
+
+      <h3>What the UPT team owns</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Area</th><th>Responsibility</th><th>Skill needed</th></tr></thead>
+          <tbody>
+            <tr><td>Member accounts and roles</td><td>Approving members, assigning roles, keeping the list current</td><td>None. Portal interface.</td></tr>
+            <tr><td>Committee rooms and rosters</td><td>Creating rooms, keeping membership accurate</td><td>None. Portal interface.</td></tr>
+            <tr><td>Document content and lifecycle</td><td>Uploading, categorising, setting access levels, publishing and archiving</td><td>None. Portal interface.</td></tr>
+            <tr><td>The code</td><td>Fixes, changes, dependency updates, deployments</td><td>Developer: TypeScript, React, Next.js</td></tr>
+            <tr><td>The AWS account</td><td>Data, files, infrastructure changes, key rotation, backups, cost</td><td>Developer: AWS and CDK</td></tr>
+            <tr><td>Secrets</td><td>Storing them safely, rotating them, removing access when someone leaves</td><td>Developer, with the team agreeing the process</td></tr>
+            <tr><td>This document</td><td>Keeping it accurate as things change</td><td>Whoever makes the change</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>What depends on someone else</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Dependency</th><th>Provides</th><th>If it fails or changes</th></tr></thead>
+          <tbody>
+            <tr><td>Vercel</td><td>Hosting and deployment</td><td>The portal is unreachable. No data is lost. Nothing UPT can do but wait, or move hosting.</td></tr>
+            <tr><td>SuperTokens managed service</td><td>Accounts, passwords, sessions</td><td>Nobody can sign in. This is the dependency with the least visibility and the least UPT-controlled backup.</td></tr>
+            <tr><td>AWS</td><td>Data and file storage</td><td>Documents cannot be listed or opened. The account is UPT's own, so recovery options are UPT's.</td></tr>
+            <tr><td>Google</td><td>Google sign-in, and email delivery via Gmail</td><td>Google sign-in stops, or portal email stops. Email and password sign-in continues either way.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Open handover items</h3>
+      <p>These need answers from whoever built and currently runs the portal, and should be filled in above:</p>
+      <ol>
+        <li>Vercel team, project name, production domain, and who has access.</li>
+        <li>SuperTokens account owner, dashboard address, plan, and its backup commitments.</li>
+        <li>AWS root account owner, MFA device, and billing contact.</li>
+        <li>The Google Cloud project holding the sign-in credentials, and its owner.</li>
+        <li>Ownership of the Gmail account currently sending portal email, and a plan to replace it.</li>
+        <li>Where shared credentials will be stored, and who holds them.</li>
+        <li>Who the named technical contact is, and who covers when they are unavailable.</li>
+      </ol>
+
+      <div class="note">
+        <span class="note-label">Suggested next step</span>
+        <p>
+          Work through the seven items above in one session with the current developer, fill in every
+          <span class="chip tbc">To confirm</span> marker in this document, and then have a second person
+          deploy a trivial application change end to end using <a href="#s6">section 6</a>. That exercise
+          will find anything this document has missed.
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div>UPT Portal handover and operations guide. Prepared 9 August 2026 against <code>main</code> at commit <code>13199c7</code>.</div>
+    <div>Source: <code>docs/handoff.html</code> in the portal repository. Update it there when procedures change.</div>
+  </footer>
+
+</div>
