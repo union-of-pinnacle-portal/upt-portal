@@ -68,11 +68,18 @@ export async function PATCH(
       patch.status = body.status;
     }
   }
+  // roomId: null means unfile, a string means move to that room.
+  // Only Super Users may unfile (leave roomId undefined); everyone else
+  // must provide a room they can write in.
+  let newRoomId: string | null | undefined = undefined;
+  if ("roomId" in body) {
+    newRoomId = body.roomId === null || body.roomId === "" ? null : String(body.roomId);
+  }
 
   if (errors.length > 0) {
     return NextResponse.json({ error: errors.join(" ") }, { status: 400 });
   }
-  if (body.categories === undefined && Object.keys(patch).length === 0) {
+  if (body.categories === undefined && Object.keys(patch).length === 0 && newRoomId === undefined) {
     return NextResponse.json(
       { error: "No editable fields provided." },
       { status: 400 },
@@ -88,6 +95,12 @@ export async function PATCH(
   // Room-scoped write check, against the room the document actually lives in.
   if (!(await canWriteInRoom(user, existing.roomId))) {
     return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+  }
+
+  // If moving to a new room, check write access to that room too
+  if (newRoomId !== undefined) {
+  // null = unfile (remove roomId), string = move to that room
+    patch.roomId = newRoomId; // pass null directly, not converted to undefined
   }
 
   if (body.categories !== undefined) {

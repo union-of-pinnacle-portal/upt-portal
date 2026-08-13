@@ -24,6 +24,8 @@ import { Button } from "@/components/ui/button";
 export function EditDocumentDialog({
   doc,
   categoryOptions = [],
+  rooms = [],
+  canFileUnfiled = false,
   trigger = "Edit",
   triggerStyle = "link",
   open: controlledOpen,
@@ -32,21 +34,12 @@ export function EditDocumentDialog({
 }: {
   doc: EditableDocument;
   categoryOptions?: string[];
-  /** Trigger text. "Details" on a page document, where "Edit" means the body. */
+  rooms?: { id: string; name: string }[];
+  canFileUnfiled?: boolean;
   trigger?: string;
-  /**
-   * How the trigger looks. "link" sits inline in a table's Actions cell
-   * alongside the other text actions; "button" matches the outline buttons in
-   * the app header, where it appears next to page-level actions.
-   */
   triggerStyle?: "link" | "button";
-  /**
-   * Open state, when a parent owns it — the row's ⋮ menu opens this dialog,
-   * and a dialog rendered inside a menu item unmounts as the menu closes.
-   */
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  /** Suppress the built-in trigger when something else opens the dialog. */
   hideTrigger?: boolean;
 }) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
@@ -74,6 +67,8 @@ export function EditDocumentDialog({
         <DocumentEditForm
           doc={doc}
           categoryOptions={categoryOptions}
+          rooms={rooms}
+          canFileUnfiled={canFileUnfiled}
           onSuccess={() => {
             setOpen(false);
             router.refresh();

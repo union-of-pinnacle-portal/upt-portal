@@ -28,6 +28,8 @@ export interface EditableDocument {
   minRank: Rank;
   status: "draft" | "published" | "archived";
   originalFilename: string;
+  /** Current room this document is filed in */
+  roomId?: string;
 }
 
 /**
@@ -41,12 +43,15 @@ export interface EditableDocument {
 export function DocumentEditForm({
   doc,
   categoryOptions = [],
+  rooms = [],
+  canFileUnfiled = false,
   onSuccess,
   onCancel,
 }: {
   doc: EditableDocument;
-  /** The existing category vocabulary; the picker can also create new ones. */
   categoryOptions?: string[];
+  rooms?: { id: string; name: string }[];
+  canFileUnfiled?: boolean;
   onSuccess?: () => void;
   onCancel?: () => void;
 }) {
@@ -77,6 +82,11 @@ export function DocumentEditForm({
           categories,
           minRank: Number(data.get("minRank")),
           status: data.get("status"),
+          ...(rooms.length > 0 || canFileUnfiled
+            ? {
+                roomId: data.get("roomId") === "unfiled" ? null : (data.get("roomId") as string) || null,
+              }
+            : {}),
         }),
       });
       if (!res.ok) {
@@ -119,6 +129,27 @@ export function DocumentEditForm({
       </div>
 
       <CategoryPicker options={categoryOptions} selected={doc.categories} />
+
+      {(rooms.length > 0 || canFileUnfiled) && (
+        <div className="grid gap-2">
+          <Label htmlFor="roomId">Committee room</Label>
+          <Select name="roomId" defaultValue={doc.roomId ?? "unfiled"}>
+            <SelectTrigger id="roomId" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {canFileUnfiled && (
+                <SelectItem value="unfiled">— Unfiled —</SelectItem>
+              )}
+              {rooms.map((r) => (
+                <SelectItem key={r.id} value={r.id}>
+                  {r.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       <div className="grid gap-2">
         <Label htmlFor="minRank">Who can view</Label>

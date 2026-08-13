@@ -156,6 +156,7 @@ export default async function DashboardPage() {
             showUnfiled={rows.some((r) => !r.roomId)}
             showManagement={showManagement}
             categoryOptions={categoryOptions}
+            canFileUnfiled={managesEverything}
           />
         )}
       </main>

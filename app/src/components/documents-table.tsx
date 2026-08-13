@@ -157,6 +157,7 @@ export function DocumentsTable({
   showManagement,
   categoryOptions,
   showRoom = true,
+  canFileUnfiled = false,
 }: {
   rows: DocumentRow[];
   rooms: { id: string; name: string }[];
@@ -169,6 +170,7 @@ export function DocumentsTable({
    * row would repeat the same value.
    */
   showRoom?: boolean;
+  canFileUnfiled?: boolean;
 }) {
   const [sorting, setSorting] = useState<SortingState>([
     { id: "updatedAt", desc: true },
@@ -302,6 +304,8 @@ export function DocumentsTable({
               kind={doc.kind}
               canDelete={doc.canDelete}
               categoryOptions={categoryOptions}
+              rooms={rooms}
+              canFileUnfiled={canFileUnfiled}
               doc={{
                 id: doc.id,
                 title: doc.title,
@@ -310,6 +314,7 @@ export function DocumentsTable({
                 minRank: doc.minRank,
                 status: doc.status,
                 originalFilename: doc.originalFilename,
+                roomId: doc.roomId,
               }}
             />
           );

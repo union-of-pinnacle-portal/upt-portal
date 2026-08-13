@@ -38,12 +38,15 @@ export function DocumentActions({
   kind,
   categoryOptions,
   canDelete,
+  rooms = [],
+  canFileUnfiled = false,
 }: {
   doc: EditableDocument;
   kind: "file" | "page";
   categoryOptions: string[];
-  /** Super Users only — see the DELETE route. */
   canDelete: boolean;
+  rooms?: { id: string; name: string }[];
+  canFileUnfiled?: boolean;
 }) {
   const [editOpen, setEditOpen] = useState(false);
   const [convertOpen, setConvertOpen] = useState(false);
@@ -88,6 +91,8 @@ export function DocumentActions({
       <EditDocumentDialog
         doc={doc}
         categoryOptions={categoryOptions}
+        rooms={rooms}
+        canFileUnfiled={canFileUnfiled}
         open={editOpen}
         onOpenChange={setEditOpen}
         hideTrigger
