@@ -1,16 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/session";
 import { canCreateRooms, deleteRoom, getRoom } from "@/lib/rooms";
+import { listVisibleForUser, updateDocument } from "@/lib/documents";
 
-/**
- * DELETE /api/rooms/:id
- *
- * Deletes a Committee Room and all its memberships.
- * Super Users only — same gate as creating rooms.
- * Documents in the room become unfiled automatically
- * (their roomId field is not updated here; they show as "Unknown room"
- *  until reassigned, which is acceptable for the delete-room use case).
- */
 export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -27,6 +19,17 @@ export async function DELETE(
   const room = await getRoom(id);
   if (!room) {
     return NextResponse.json({ error: "Not found." }, { status: 404 });
+  }
+
+  // Unfile all documents in this room before deleting
+  const allDocs = await listVisibleForUser({
+    rank: 4,
+    manageableRoomIds: new Set([id]),
+    managesEverything: true,
+  });
+  const roomDocs = allDocs.filter((d) => d.roomId === id);
+  for (const doc of roomDocs) {
+    await updateDocument(doc.id, { roomId: null });
   }
 
   await deleteRoom(id);

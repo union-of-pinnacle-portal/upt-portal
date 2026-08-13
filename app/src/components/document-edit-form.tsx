@@ -84,7 +84,7 @@ export function DocumentEditForm({
           status: data.get("status"),
           ...(rooms.length > 0 || canFileUnfiled
             ? {
-                roomId: data.get("roomId") === "unfiled" ? null : data.get("roomId") || undefined,
+                roomId: data.get("roomId") === "unfiled" ? null : (data.get("roomId") as string) || null,
               }
             : {}),
         }),
