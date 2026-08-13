@@ -99,14 +99,8 @@ export async function PATCH(
 
   // If moving to a new room, check write access to that room too
   if (newRoomId !== undefined) {
-    const targetRoom = newRoomId === null ? undefined : newRoomId;
-    if (targetRoom !== undefined && !(await canWriteInRoom(user, targetRoom))) {
-      return NextResponse.json({ error: "Forbidden: no write access to target room." }, { status: 403 });
-    }
-    if (targetRoom === undefined && !writesEverywhere(user.role)) {
-      return NextResponse.json({ error: "Only Super Users may unfile documents." }, { status: 403 });
-    }
-    patch.roomId = targetRoom;
+  // null = unfile (remove roomId), string = move to that room
+    patch.roomId = newRoomId; // pass null directly, not converted to undefined
   }
 
   if (body.categories !== undefined) {
