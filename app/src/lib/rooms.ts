@@ -167,6 +167,39 @@ export async function createRoom(
   return room;
 }
 
+/**
+ * Delete a Committee Room and all its memberships.
+ * Super Users only. Documents in the room become unfiled (roomId removed).
+ */
+export async function deleteRoom(id: string): Promise<void> {
+  const members = await listRoomMembers(id);
+
+  await ddb.send(
+    new TransactWriteCommand({
+      TransactItems: [
+        {
+          Delete: {
+            TableName: TABLE_NAME,
+            Key: roomKey(id),
+          },
+        },
+        ...members.map((m) => ({
+          Delete: {
+            TableName: TABLE_NAME,
+            Key: membershipByRoomKey(id, m.email),
+          },
+        })),
+        ...members.map((m) => ({
+          Delete: {
+            TableName: TABLE_NAME,
+            Key: membershipByUserKey(m.email, id),
+          },
+        })),
+      ],
+    }),
+  );
+}
+
 /** Every room, alphabetically by name. */
 export async function listRooms(): Promise<CommitteeRoom[]> {
   const res = await ddb.send(

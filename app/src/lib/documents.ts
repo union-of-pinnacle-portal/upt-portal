@@ -225,10 +225,9 @@ export async function listVisibleForUser(opts: {
 /**
  * The document fields an admin may edit after upload.
  *
- * `roomId` is deliberately absent: moving a document between rooms changes who
- * may write it, so it is a permission change rather than a metadata edit. A
- * Chair could otherwise walk a document into a room they control and take
- * ownership of it. Leave re-filing to a dedicated, Super-User-only action.
+ * `roomId` is now included but gated server-side: only Super Users may unfile
+ * (set to undefined/null); moving to another room requires write access to
+ * that target room. The API route enforces this before calling updateDocument.
  */
 export interface UpdateDocumentInput {
   title?: string;
@@ -236,6 +235,8 @@ export interface UpdateDocumentInput {
   categories?: string[];
   minRank?: Rank;
   status?: DocumentStatus;
+  /** undefined = don't change; null = unfile; string = move to this room */
+  roomId?: string | null;
 }
 
 /**
@@ -263,9 +264,6 @@ export async function updateDocument(
   if (patch.title !== undefined) set("title", patch.title);
   if (patch.categories !== undefined) {
     set("categories", patch.categories);
-    // Drop the legacy single-category attribute so a document never carries
-    // both — `documentCategories()` prefers the array, but leaving a stale
-    // value behind invites the two drifting apart.
     names["#category"] = "category";
     removes.push("#category");
   }
@@ -277,6 +275,14 @@ export async function updateDocument(
       removes.push("#description");
     } else {
       set("description", patch.description);
+    }
+  }
+  if (patch.roomId !== undefined) {
+    if (patch.roomId === null) {
+      names["#roomId"] = "roomId";
+      removes.push("#roomId");
+    } else {
+      set("roomId", patch.roomId);
     }
   }
 

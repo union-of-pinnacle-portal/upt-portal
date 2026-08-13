@@ -15,6 +15,7 @@ import { AppHeader } from "@/components/app-header";
 import { EmptyState } from "@/components/empty-state";
 import { PageBreadcrumb } from "@/components/page-breadcrumb";
 import { RoomMemberManager } from "@/components/room-member-manager";
+import { DeleteRoomButton } from "@/components/delete-room-button";
 import {
   DocumentsTable,
   type DocumentRow,
@@ -91,7 +92,11 @@ export default async function RoomPage({
 
   return (
     <div className="min-h-svh bg-muted/30">
-      <AppHeader />
+      <AppHeader>
+        {writesEverywhere(user.role) ? (
+          <DeleteRoomButton roomId={room.id} roomName={room.name} />
+        ) : null}
+      </AppHeader>
 
       <main className="mx-auto w-full max-w-[100rem] px-6 py-8 lg:px-10">
         <PageBreadcrumb
