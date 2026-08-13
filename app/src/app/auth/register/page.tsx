@@ -30,6 +30,14 @@ export default function RegisterPage() {
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    const checkRes = await fetch(`/api/auth/check-email?email=${encodeURIComponent(email)}`);
+    const checkData = await checkRes.json();
+    if (checkData.existsViaGoogle) {
+      setError("This email is already registered with Google. Please sign in with Google instead.");
+      setIsSubmitting(false);
+      return;
+    }
     setIsSubmitting(true);
 
     // Sign up with SuperTokens
