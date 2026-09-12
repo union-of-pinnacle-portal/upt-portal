@@ -29,6 +29,7 @@ function LoginPageContent() {
   const searchParams = useSearchParams();
   const verified = searchParams.get("verified");
   const promoted = searchParams.get("promoted");
+  const oauthFailed = searchParams.get("error") === "oauth_failed";
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -97,6 +98,11 @@ function LoginPageContent() {
           {promoted && (
             <p className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">
               Admin role activated — sign in to continue.
+            </p>
+          )}
+          {oauthFailed && (
+            <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              Google sign in didn&apos;t complete. Please try again.
             </p>
           )}
           <Button
